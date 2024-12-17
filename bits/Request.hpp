@@ -1,16 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.hpp                                        :+:      :+:    :+:   */
+/*   Request.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/15 15:51:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/15 19:51:52 by iassil           ###   ########.fr       */
+/*   Created: 2024/12/16 12:16:53 by iassil            #+#    #+#             */
+/*   Updated: 2024/12/16 18:37:57 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+#include "RequestParser.hpp"
+#include "parse/RequestLineParser.hpp" // IWYU pragma: keep
+#include "parse/HeaderParser.hpp" // IWYU pragma: keep
+#include "parse/BodyParser.hpp" // IWYU pragma: keep
 #include <iostream> // IWYU pragma: keep
 #include <map> // IWYU pragma: keep
 #include <sstream>
@@ -18,7 +22,6 @@
 #include <string>
 #include <regex>
 #include <algorithm>
-
 
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
@@ -28,6 +31,7 @@
 #define CYAN    "\x1b[36m"
 #define RESET   "\x1b[0m"
 
+#define REQUEST_IML "501 Not Implemented\n"
 #define BAD_REQUEST "400 Bad Request\n"
 
 using std::string;
@@ -40,62 +44,52 @@ using std::istream;
 using std::getline;
 using std::find;
 using std::regex;
+using std::vector;
+
+class BodyParser;
+
+enum req_stat {
+	CHUNCKED,
+	CHUNCK_BOUND,
+	BOUNDARIES,
+	CONTENT_LENGTH,
+	NONE
+};
+
+/*
+BODY - Handle
+	-> Transfer-encoding
+		-> chuncked (vanilla)
+			-> chuncked
+			-> chuncked with boundaries
+		-> otherwise: 501 Not Implemented
+	-> boundaries
+	-> Content-length
+
+*/
 
 class Request {
 	private:
-		struct req_ {
-			string method;
-			string uri;
-			string httpv;
+		RequestLineParser*		requestLineParser;
+		HeaderParser*			headerParser;
+		BodyParser*				bodyParser;
 
-			void	split_string( const std::string& str ) {
-				string				token;
-				std::istringstream	tokenStream(str);
-				
-				if (getline(tokenStream, token, ' ')) {
-					method = token;
-				}
-				
-				if (getline(tokenStream, token, ' ')) {
-					uri = token;
-				}
-				
-				if (getline(tokenStream, token, '\r')) {
-					httpv = token;
-				}
-				
-				size_t	pos = httpv.find_first_of(" \t");
-				if (pos != std::string::npos || method.empty() \
-					|| uri.empty() || httpv.empty())
-					throw BAD_REQUEST;
-			}
-		};
+		vector<RequestParser*>	request;
+		req_stat				req_status;
+		t_header_infos			header_infos;
 
-		req_				_req_line_;
-		map<string, string>	headers;
-
-		Request() {}
-		Request& operator=( const Request& obj ) {
-			(void)obj;
-			return *this;
-		}
-
-		bool	isValidHeader( const string& header );
-		bool	isValidRequestLine( const string& header );
-		void	carriageRegex( const string& line );
-		void 	extractHeaders(const string &line);
-		bool	isDoubleCRLF( istream& stream, const string& line );
+		Request& operator=( const Request& );
+		Request( const Request& );
 	
 	public:
-		Request( const string& request );
-		~Request() {}
-		void	print() {
-			cout << YELLOW "Method: " RESET << "[" << _req_line_.method << "]\n";
-			cout << YELLOW "URI: " RESET << "[" << _req_line_.uri << "]\n";
-			cout << YELLOW "HTTP version: " RESET << "[" << _req_line_.httpv << "]\n";
-			map<string, string>::iterator it = headers.begin();
-			for ( ; it != headers.end(); it++) {
-				cout << YELLOW << it->first << ": " RESET << "[" << it->second << "]\n";
-			}
-		}
+		Request();
+		~Request();
+
+		void			parseRequestHeader( const string& RawRequest );
+		void			parseRequestBody( const string& RawRequest, t_header_infos& header_info );
+
+		req_stat		getRequestStatus();
+		t_header_infos	getHeaderInfos();
+
+		void	print();
 };

@@ -1,81 +1,90 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:58:58 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/15 19:40:14 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/16 17:30:09 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../bits/Request.hpp"
 
-bool	Request::isValidHeader( const string& line ) {
-	std::regex	regexHeader("^([A-Za-z0-9\\-]+):[ \t]*([ ~]+\\r)$");
-
-	return std::regex_match(line, regexHeader);
+Request::Request() {
+	requestLineParser = new RequestLineParser();
+	headerParser = new HeaderParser();
+	bodyParser = new BodyParser();
 }
 
-bool	Request::isValidRequestLine( const string& header ) {
-	regex requestLineRegex("^([A-Z]+) (\\S+) (HTTP/\\d\\.\\d)\\r$");
-
-	return std::regex_match(header, requestLineRegex);
+Request::~Request() {
+	vector<RequestParser*>::iterator it = request.begin();
+	for (; it != request.end(); it++) {
+		delete *it;
+	}
 }
 
+void	Request::parseRequestHeader( const string& RawRequest ) {
+	istringstream	stream(RawRequest);
 
-void	Request::carriageRegex( const string& line ) {
-	size_t	pos = line.find("\r");
+	requestLineParser->parse(stream);
+	headerParser->parse(stream);
+
+	request.push_back(requestLineParser);
+	request.push_back(headerParser);
+
+	print();
+}
+
+void	Request::parseRequestBody( const string& RawRequest, t_header_infos& header_info ) {
+	istringstream	stream(RawRequest);
+
+	if (req_status == CHUNCKED)
+		bodyParser->parseChunckedBody(stream, header_info);
+}
+
+req_stat	Request::getRequestStatus() {
+	map<string, string>	requestHeader = request[1]->getHeaders();
 	
-	if (pos == std::string::npos || pos != line.length() - 1)
-		throw BAD_REQUEST;
+	map<string, string>::iterator it_tr = requestHeader.find("transfer-encoding");
+	map<string, string>::iterator it_ct = requestHeader.find("content-type");
+	
+	if ( it_tr == requestHeader.end() )
+		throw REQUEST_IML;
+	if ( it_tr != requestHeader.end() && it_tr->second.find("chuncked") != std::string::npos ) {
+		if ( it_ct->second.find("multipart/form-data;") )
+			return CHUNCK_BOUND;
+		return CHUNCKED;
+	}
+	return NONE;
 }
 
-void Request::extractHeaders(const string &line) {
-	string field, value;
-	size_t pos = line.find(':');
+t_header_infos		Request::getHeaderInfos() {
+	map<string, string>	requestHeader = request[1]->getHeaders();
 
-	if (pos == std::string::npos)
-		throw BAD_REQUEST;
+	map<string, string>::iterator it_ct = requestHeader.find("content-type");
+	map<string, string>::iterator it_cl = requestHeader.find("content-length");
 
-	field = line.substr(0, pos);
-	value = line.substr(pos + 1);
-	value.erase(0, value.find_first_not_of(" \t"));
-	value.erase(value.find_last_not_of(" \t"));
-	if (field.empty() || value.empty())
-		throw BAD_REQUEST;
-	headers[field] = value;
-}
-
-bool	Request::isDoubleCRLF( istream& stream, const string& line ) {
-	size_t	pos = line.find("\r");
-
-	char s = stream.peek();
-	if ( pos != std::string::npos && s == '\r' && line.length() - 1 == pos )
-		return true;
-
-	return false;
-}
-
-Request::Request( const string& request ) {
-	istringstream	stream(request);
-	string			line;
-
-	while (getline(stream, line, '\n')) {
-		if ( line.empty() || line == "\r" || !isValidRequestLine(line) ) {
-			throw BAD_REQUEST;
-		}
-		_req_line_.split_string(line);
-		carriageRegex(line);
-		break ;
+	if ( it_ct != requestHeader.end() ) {
+		string	type = it_ct->second;
+		type.erase(0, type.find_first_of("/"));
+		header_infos.content_type = type;
+	}
+	if ( it_ct != requestHeader.end() ) {
+		header_infos.content_length = it_cl->second;
 	}
 
-	while (getline(stream, line, '\n')) {
-		if ( isDoubleCRLF(stream, line) )
-			break ;
-		if ( line.empty() || line == "\r" || isValidHeader(line) )
-			throw BAD_REQUEST;
-		extractHeaders(line);
+	return header_infos;
+}
+
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+void	Request::print() {
+	vector<RequestParser*>::iterator it = request.begin();
+	for (; it != request.end(); it++) {
+		(*it)->print();
 	}
 }
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
