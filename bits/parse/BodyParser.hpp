@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/18 09:29:46 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/18 14:54:37 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,25 +16,28 @@
 
 class BodyParser : public RequestParser {
 	private:
-		bool			hasPermission;
-		bool			isBodyTopDone;
-		bool			isBodyDone;
+		TaskStatus		bodyStatus;
 		HeaderInfo		header_info;
 		RequestStatus	status;
 		ofstream*		outfile;
 		string			requestChunk;
+		string			name;
+		string			chunk;
+		vector<pair<string, string> >	metaData;
 
 		void	parseChunckedBody( istringstream& );
 		void	parseBoundaries( istringstream& );
 		
-		const string	getFilname( string& );
+		void	parseNameAttr( size_t& );
+		void	parseFilenameAttr( size_t& );
+
+		void	parseFilenameBody( void );
+		void	parseNameBody( void );
+		
+		const string	getAttr( string& );
 
 	public:
-		BodyParser()
-			: RequestParser(),
-			hasPermission(false),
-			isBodyTopDone(false),
-			isBodyDone(false) {}
+		BodyParser();
 
 		void	parse( istringstream& );
 		

@@ -23,6 +23,8 @@
 #include <algorithm> // IWYU pragma: keep
 #include <sstream> // IWYU pragma: keep
 #include <fstream> // IWYU pragma: keep
+#include <utility> // IWYU pragma: keep
+#include <cstddef> // IWYU pragma: keep
 
 
 #define RED		"\x1b[31m"
@@ -44,6 +46,7 @@
 #define DELETE			"DELETE"
 #define C_DISP			"Content-Disposition:"
 #define FILENAME		"; filename=\""
+#define NAME			"name=\""
 #define QUOTE			"\""
 #define CRNL			"\r\n"
 #define DCRNL			"\r\n\r\n"
@@ -61,24 +64,35 @@ using std::regex;
 using std::ofstream;
 using std::ios;
 using std::runtime_error;
+using std::pair;
+using std::make_pair;
+using std::vector;
 
 struct RequestLine {
-    string	method;
-    string	uri;
-    string	httpVersion;
+	string	method;
+	string	uri;
+	string	httpVersion;
+};
+
+struct TaskStatus {
+	bool	perm;
+	bool	initDone;
+	bool	bodyDone;
+	bool	isUp;
+	bool	isNa;
 };
 
 struct HeaderInfo {
-    string	contentType;
-    string	contentLength;
+	string	contentType;
+	string	contentLength;
 	string	boundary;
 	string	endBoundary;
 };
 
 enum RequestStatus {
-    CHUNKED,
-    CHUNK_BOUND,
-    BOUNDARIES,
-    CONTENT_LENGTH,
-    NONE
+	CHUNKED,
+	CHUNK_BOUND,
+	BOUNDARIES,
+	CONTENT_LENGTH,
+	NONE
 };

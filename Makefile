@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/18 10:55:03 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/18 16:16:04 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,6 +42,7 @@ OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
 all: $(NAME)
 
 run: all
+	
 	@./$(NAME)
 
 $(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)

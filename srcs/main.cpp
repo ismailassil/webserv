@@ -6,13 +6,14 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:36:29 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/18 12:27:12 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/18 15:27:15 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../bits/RequestBuilder.hpp"
 
 #include <cstddef>
+#include <exception>
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
@@ -64,14 +65,19 @@ int main() {
         int bytes_received;
 
         while ((bytes_received = recv(new_socket, buffer, sizeof(buffer), 0)) > 0) {
-            std::cout<< buffer << std::endl;
 			string buf;
 
-			ofstream ss("tmp.py", ios::app);
-			ss << buf;
-
 			buf.assign(buffer, bytes_received);
-			req->build(buf);
+	
+			ofstream ss("request.txt", ios::app);
+			ss << buf;
+			try {
+				req->build(buf);
+			} catch ( const char* e ) {
+				cerr << "Error: " << e << endl;
+			} catch ( const std::exception& ee ) {
+				cerr << "Error: " << ee.what() << endl;
+			}
         }
 
         if (bytes_received < 0) {
