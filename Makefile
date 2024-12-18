@@ -6,22 +6,24 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/17 08:14:19 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/18 10:55:03 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CPP				=	c++
 CPP				+=	-Wall -Wextra -Werror -std=c++98
+CPP				+=	-fsanitize=address -g
 RM				=	rm -f
 NAME			=	webserv
-SRC_HR_H		=	bits/Request.hpp				bits/BodyParser.hpp					bits/HTTPMethods.hpp	\
-					bits/parse/HeaderParser.hpp			bits/parse/RequestLineParser.hpp	bits/RequestParser.hpp	\
-					bits/RequestBuilder.cpp
+HEADER			=	bits/HTTPMethods.hpp		bits/RequestBuilder.hpp			bits/RequestParser.hpp		\
+					bits/bits.hpp
+PARSE_HEADER	=	bits/parse/BodyParser.hpp	bits/parse/HeaderParser.hpp		bits/parse/RequestLineParser.hpp
+
 FLD_NAME		=	._object_files
 
 ##### SOURCE FILES #######################################################################
 SRC_FILES	=	main.cpp
-RQS_FILES	=	Request.cpp		RequestParser.cpp		RequestBuilder.cpp
+RQS_FILES	=	RequestParser.cpp	RequestBuilder.cpp
 PRS_FILES	=	HeaderParser.cpp	RequestLineParser.cpp	BodyParser.cpp
 
 ##########################################################################################
@@ -40,26 +42,27 @@ OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
 all: $(NAME)
 
 run: all
-	./$(NAME)
+	@./$(NAME)
 
-$(FLD_NAME)/srcs/%.o:./srcs/%.cpp $(SRC_HR_H)
+$(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)
 	@mkdir -p $(dir $@)
 	@$(CPP) -c $< -o $@
 
-$(FLD_NAME)/request/%.o:./request/%.cpp $(SRC_HR_H)
+$(FLD_NAME)/request/%.o: ./request/%.cpp $(HEADER)
 	@mkdir -p $(dir $@)
 	@$(CPP) -c $< -o $@
 
-$(FLD_NAME)/request/parse/%.o:./request/parse/%.cpp $(SRC_HR_H)
+$(FLD_NAME)/request/parse/%.o: ./request/parse/%.cpp $(PARSE_HEADER)
 	@mkdir -p $(dir $@)
 	@$(CPP) -c $< -o $@
 
 ######################################################
-
 $(NAME): $(OBJ)
 	@echo "$(YELLOW)[ ~ ] Compilation of the Objects files...$(RESET)"
+	@$(RM) Request.txt
 	@$(CPP) $^ -o $@
 	@echo "$(GREEN)[ ✓ ] Executable file Compiled Successfully!$(RESET)"
+
 
 clean:
 	@echo "$(YELLOW)[ ~ ] Removing Object files $(RESET)"

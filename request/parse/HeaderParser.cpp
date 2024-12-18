@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:38:45 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/16 15:22:55 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/17 12:42:48 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,6 @@ bool	HeaderParser::isValidHeader( const string& line ) {
     std::regex regexHeader("^([A-Za-z0-9\\-]+):([ \t]*)([^\\r\\n]+)\\r$");
 
 	return std::regex_match(line, regexHeader);
-}
-
-void	HeaderParser::lowerString( string& str ) {
-	for ( int i = 0; i < static_cast<int>(str.length()); i++ ) {
-		str[i] = tolower(str[i]);
-	}
 }
 
 bool	HeaderParser::isDoubleCRLF( istream& stream, const string& line ) {
@@ -47,7 +41,7 @@ void	HeaderParser::parseLine(const string& line) {
 	value.erase(value.find_last_not_of(" \t"));
 	if ( field.empty() )
 		throw BAD_REQUEST;
-	lowerString(field);
+	transform(field.begin(), field.end(), field.begin(), ::tolower);
 	headers[field] = value;
 }
 
@@ -61,12 +55,11 @@ void	HeaderParser::parse( istringstream& stream ) {
 		if ( isDoubleCRLF(stream, line) )
 			break ;
 	}
-	if (headers.find(HOST) == headers.end())
-		throw BAD_REQUEST;
+	if (headers.find(HOST) == headers.end()) throw BAD_REQUEST;
 }
 
-void	HeaderParser::print() {
-	map<string, string>::iterator it = headers.begin();
+void	HeaderParser::print() const {
+	map<string, string>::const_iterator it = headers.begin();
 	for ( ; it != headers.end(); it++) {
 		cout << YELLOW << it->first << ": " RESET << "[" << it->second << "]\n";
 	}

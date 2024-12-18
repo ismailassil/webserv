@@ -6,46 +6,36 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:05:53 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/17 08:18:30 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/18 09:28:48 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "Request.hpp"
-#include <iostream> // IWYU pragma: keep
-#include <map> // IWYU pragma: keep
-#include <regex> // IWYU pragma: keep
-
-#define RED     "\x1b[31m"
-#define GREEN   "\x1b[32m"
-#define YELLOW  "\x1b[33m"
-#define BLUE    "\x1b[34m"
-#define MAGENTA "\x1b[35m"
-#define CYAN    "\x1b[36m"
-#define RESET   "\x1b[0m"
-
-using std::string;
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::map;
-using std::istringstream;
-using std::istream;
-using std::getline;
-using std::find;
-using std::regex;
+#include "parse/BodyParser.hpp"
+#include "parse/HeaderParser.hpp"
+#include "parse/RequestLineParser.hpp"
+#include "bits.hpp"
 
 class RequestBuilder {
 	private:
-		string			rawRequestHeader;
-		bool			isHeaderDone;
-		req_stat		req_status;
-		t_header_infos	header_info;
-		Request*		req;
-	
+		string				rawRequest;
+		RequestLineParser*	requestLineParser;
+		HeaderParser*		headerParser;
+		BodyParser*			bodyParser;
+		RequestStatus		status;
+		HeaderInfo			headerInfo;
+		bool				isHeaderDone;
+		bool				isSettingDone;
+
 	public:
 		RequestBuilder();
-		~RequestBuilder();
 
-		void	requestProcess( const string& comingRequest );
+		void	build( const string& );
+		void	print() const;
+
+		void	parseRequestHeader( const string& );
+		void	parseRequestBody( string& );
+
+		void	getRequestStatus();
+		void	getHeaderInfos();
 };
