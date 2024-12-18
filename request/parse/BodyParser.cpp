@@ -6,13 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/18 16:08:16 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/18 16:35:56 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../bits/parse/BodyParser.hpp"
-#include <exception>
-#include <string>
 
 BodyParser::BodyParser() : RequestParser() {
 	bodyStatus.perm= false;
@@ -44,15 +42,6 @@ void	BodyParser::parseFilenameBody( void ) {
 		outfile->write(requestChunk.c_str(), requestChunk.length());
 		requestChunk.clear();
 	}
-	if ( epos != std::string::npos ) { // endBoundary FOUND
-		requestChunk.erase( epos - 2 );
-		outfile->write(requestChunk.c_str(), requestChunk.length());
-		if ( outfile ) {
-			outfile->close();
-			delete outfile;
-		}
-		return ;
-	}
 	if ( pos != std::string::npos ) { // Boundary FOUND
 		string	remaingStr = requestChunk.substr( 0, pos - 2 );
 		requestChunk.erase( 0, pos );
@@ -61,6 +50,17 @@ void	BodyParser::parseFilenameBody( void ) {
 		bodyStatus.isUp = false;
 		outfile->close();
 		delete outfile;
+	}
+	else if ( epos != std::string::npos ) { // endBoundary FOUND
+		requestChunk.erase( epos - 2 );
+		outfile->write(requestChunk.c_str(), requestChunk.length());
+		if ( outfile ) {
+			outfile->close();
+			delete outfile;
+		}
+		requestChunk.clear();
+
+		return ;
 	}
 }
 
@@ -71,16 +71,6 @@ void	BodyParser::parseNameBody( void ) {
 	if ( pos == std::string::npos && epos == std::string::npos ) {
 		chunk.append(requestChunk);
 		requestChunk.clear();
-	}
-	if ( epos != std::string::npos ) { // endBoundary FOUND
-		requestChunk.erase( epos - 2 );
-		chunk.append(requestChunk);
-		metaData.push_back(make_pair(name, chunk));
-		ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary );
-		nOutfile << chunk;
-		chunk.clear();
-
-		return ;
 	}
 	if ( pos != std::string::npos ) { // Boundary FOUND
 		string	remaingStr = requestChunk.substr( 0, pos - 2 );
@@ -93,6 +83,17 @@ void	BodyParser::parseNameBody( void ) {
 
 		bodyStatus.initDone = false;
 		bodyStatus.isNa = false;
+	}
+	else if ( epos != std::string::npos ) { // endBoundary FOUND
+		requestChunk.erase( epos - 2 );
+		chunk.append(requestChunk);
+		metaData.push_back(make_pair(name, chunk));
+		ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary );
+		nOutfile << chunk;
+		chunk.clear();
+		requestChunk.clear();
+
+		return ;
 	}
 }
 
@@ -135,29 +136,32 @@ const string	BodyParser::getAttr( string& requestBody ) {
 void	BodyParser::parseBoundaries( istringstream& stream ) {
 	requestChunk.append(stream.str());
 
-	if ( !bodyStatus.initDone ) {
-		size_t	bd_pos = requestChunk.find( header_info.boundary );
-		if ( bd_pos == std::string::npos ) throw "BOUNDARY NOT FOUND";
+	while ( !requestChunk.empty() ) {
+		if ( !bodyStatus.initDone ) {
+			size_t	bd_pos = requestChunk.find( header_info.boundary );
+			if ( bd_pos == std::string::npos ) throw "BOUNDARY NOT FOUND";
 
-		size_t	fl_pos = requestChunk.find( FILENAME );
-		size_t	npos = requestChunk.find( NAME );
-		size_t	crpos = requestChunk.find( DCRNL, npos );
+			size_t	fl_pos = requestChunk.find( FILENAME );
+			size_t	npos = requestChunk.find( NAME );
+			size_t	crpos = requestChunk.find( DCRNL, npos );
 
-		if ( fl_pos != std::string::npos && fl_pos < crpos ) {
-			parseFilenameAttr( fl_pos );
-			bodyStatus.initDone = true;
-			bodyStatus.isUp = true;
-		} else if ( npos != std::string::npos ) {
-			parseNameAttr( npos );
-			bodyStatus.initDone = true;
-			bodyStatus.isNa = true;
+			if ( fl_pos != std::string::npos && fl_pos < crpos ) {
+				parseFilenameAttr( fl_pos );
+				bodyStatus.initDone = true;
+				bodyStatus.isUp = true;
+			} else if ( npos != std::string::npos ) {
+				parseNameAttr( npos );
+				bodyStatus.initDone = true;
+				bodyStatus.isNa = true;
+			}
+			else throw BAD_REQUEST;
 		}
-		else throw BAD_REQUEST;
-	}
-	if ( bodyStatus.initDone && bodyStatus.isUp ) {
-		parseFilenameBody();
-	} else if ( bodyStatus.initDone && bodyStatus.isNa ) {
-		parseNameBody();
+		if ( bodyStatus.initDone && bodyStatus.isUp ) {
+			parseFilenameBody();
+		} else if ( bodyStatus.initDone && bodyStatus.isNa ) {
+			parseNameBody();
+		}
+
 	}
 }
 

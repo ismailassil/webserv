@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/18 16:16:04 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/18 16:36:31 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,8 +41,7 @@ OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
 ########### Goal Target
 all: $(NAME)
 
-run: all
-	
+run: re
 	@./$(NAME)
 
 $(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)
@@ -67,6 +66,7 @@ $(NAME): $(OBJ)
 
 clean:
 	@echo "$(YELLOW)[ ~ ] Removing Object files $(RESET)"
+	@$(RM) _downloads/* request.txt
 	@$(RM) $(OBJ)
 	@$(RM) -rf $(FLD_NAME)
 	@echo "$(GREEN)[ ✓ ] Object files removed successfully!$(RESET)"
