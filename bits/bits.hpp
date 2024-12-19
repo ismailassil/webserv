@@ -25,14 +25,15 @@
 #include <fstream> // IWYU pragma: keep
 #include <utility> // IWYU pragma: keep
 #include <cstddef> // IWYU pragma: keep
+#include <cstddef> // IWYU pragma: keep
+#include <ios> // IWYU pragma: keep
 
-
-#define RED		"\x1b[31m"
+#define RED		"\x1b[1;31m"
 #define GREEN	"\x1b[1;32m"
-#define YELLOW	"\x1b[33m"
-#define BLUE	"\x1b[34m"
-#define MAGENTA	"\x1b[35m"
-#define CYAN	"\x1b[36m"
+#define YELLOW	"\x1b[1;33m"
+#define BLUE	"\x1b[1;34m"
+#define MAGENTA	"\x1b[1;35m"
+#define CYAN	"\x1b[1;36m"
 #define RESET	"\x1b[0m"
 
 #define REQUEST_IML 	"501 Not Implemented\n"
@@ -67,6 +68,9 @@ using std::runtime_error;
 using std::pair;
 using std::make_pair;
 using std::vector;
+using std::ifstream;
+using std::strtol;
+using std::remove;
 
 struct RequestLine {
 	string	method;
@@ -84,7 +88,7 @@ struct TaskStatus {
 
 struct HeaderInfo {
 	string	contentType;
-	string	contentLength;
+	size_t	contentLength;
 	string	boundary;
 	string	endBoundary;
 };
@@ -94,5 +98,6 @@ enum RequestStatus {
 	CHUNK_BOUND,
 	BOUNDARIES,
 	CONTENT_LENGTH,
+	NO_CONTENT_LENGTH,
 	NONE
 };

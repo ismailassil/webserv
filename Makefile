@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/18 16:36:31 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/19 17:02:22 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -41,7 +41,8 @@ OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
 ########### Goal Target
 all: $(NAME)
 
-run: re
+run: art $(NAME)
+	@$(RM) _downloads/* request.py chunks.py
 	@./$(NAME)
 
 $(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)
@@ -59,14 +60,13 @@ $(FLD_NAME)/request/parse/%.o: ./request/parse/%.cpp $(PARSE_HEADER)
 ######################################################
 $(NAME): $(OBJ)
 	@echo "$(YELLOW)[ ~ ] Compilation of the Objects files...$(RESET)"
-	@$(RM) Request.txt
+	@$(RM) Request.py chunks.py
 	@$(CPP) $^ -o $@
 	@echo "$(GREEN)[ ✓ ] Executable file Compiled Successfully!$(RESET)"
 
 
 clean:
 	@echo "$(YELLOW)[ ~ ] Removing Object files $(RESET)"
-	@$(RM) _downloads/* request.txt
 	@$(RM) $(OBJ)
 	@$(RM) -rf $(FLD_NAME)
 	@echo "$(GREEN)[ ✓ ] Object files removed successfully!$(RESET)"
@@ -80,7 +80,27 @@ re: fclean all
 
 .PHONY: all fclean clean re
 
+
+art:
+	@echo ""
+	@echo ""
+	@echo "\t$(LIGHT_RED) █     █░▓█████  ▄▄▄▄     ██████ ▓█████  ██▀███   ██▒   █▓ $(RESET)"
+	@echo "\t$(LIGHT_RED)▓█░ █ ░█░▓█   ▀ ▓█████▄ ▒██    ▒ ▓█   ▀ ▓██ ▒ ██▒▓██░   █▒ $(RESET)"
+	@echo "\t$(LIGHT_RED)▒█░ █ ░█ ▒███   ▒██▒ ▄██░ ▓██▄   ▒███   ▓██ ░▄█ ▒ ▓██  █▒░ $(RESET)"
+	@echo "\t$(RED)░█░ █ ░█ ▒▓█  ▄ ▒██░█▀    ▒   ██▒▒▓█  ▄ ▒██▀▀█▄    ▒██ █░░ $(RESET)"
+	@echo "\t$(RED)░░██▒██▓ ░▒████▒░▓█  ▀█▓▒██████▒▒░▒████▒░██▓ ▒██▒   ▒▀█░   $(RESET)"
+	@echo "\t$(RED)░ ▓░▒ ▒  ░░ ▒░ ░░▒▓███▀▒▒ ▒▓▒ ▒ ░░░ ▒░ ░░ ▒▓ ░▒▓░   ░ ▐░   $(RESET)"
+	@echo "\t$(RED)  ▒ ░ ░   ░ ░  ░▒░▒   ░ ░ ░▒  ░ ░ ░ ░  ░  ░▒ ░ ▒░   ░ ░░   $(RESET)"
+	@echo "\t$(DARK_RED)  ░   ░     ░    ░    ░ ░  ░  ░     ░     ░░   ░      ░░   $(RESET)"
+	@echo "\t$(DARK_RED)    ░       ░  ░ ░            ░     ░  ░   ░           ░   $(RESET)"
+	@echo "\t$(DARK_RED)                      ░                               ░   $(RESET)"
+	@echo ""
+	@echo ""
+
 ########## Define ANSI escape codes for colors
-GREEN=	\033[1;32m
-YELLOW=	\033[33m
-RESET=	\033[0m
+GREEN			=	\033[1;32m
+YELLOW			=	\033[33m
+LIGHT_RED		:=	\033[91m
+RED				:=	\033[31m
+DARK_RED		:=	\033[2;31m
+RESET			=	\033[0m
