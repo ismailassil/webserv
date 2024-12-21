@@ -14,4 +14,6 @@ class Location {
 		bool						autoindex;
 		std::string					upload_path;
 		std::string					redirect;
+	public:
+		void	setDirectives(std::map<std::string, std::vector<std::string> > directives);
 };
