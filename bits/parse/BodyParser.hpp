@@ -6,19 +6,18 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/19 18:33:22 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/20 20:10:15 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "../RequestParser.hpp" // IWYU pragma: keep
 #include "../bits.hpp"
-#include <cstddef>
 
 class BodyParser : public RequestParser {
 	private:
 		TaskStatus		bodyStatus;
-		HeaderInfo		header_info;
+		HeaderInfo		headerInfo;
 		RequestStatus	status;
 		ofstream		outfile;
 		string			requestChunk;
@@ -28,9 +27,9 @@ class BodyParser : public RequestParser {
 		string			MChunk;
 		size_t			BodyLength;
 		size_t			chunkLength;
-		vector<pair<string, string> >	metaData;
 
-		void	parseChunckedBody( const istringstream& );
+		void	parseChunked( const istringstream& );
+		void	parseChunkedBoundaries( const istringstream& );
 		void	parseBoundaries( const istringstream& );
 		void	parseBinary( const istringstream& );
 		
@@ -39,6 +38,8 @@ class BodyParser : public RequestParser {
 
 		void	parseFilenameBody( void );
 		void	parseNameBody( void );
+
+		void	parseInerBoundary( const string& body );
 		
 		const string	getAttr( string& );
 

@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/19 17:02:22 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/20 21:00:46 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,7 +42,7 @@ OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
 all: $(NAME)
 
 run: art $(NAME)
-	@$(RM) _downloads/* request.py chunks.py
+	@$(RM) _downloads/* *.py
 	@./$(NAME)
 
 $(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)

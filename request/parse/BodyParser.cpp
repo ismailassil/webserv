@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/19 21:57:50 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/21 03:52:37 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,15 @@ BodyParser::BodyParser() : RequestParser() {
 void	BodyParser::parse( istringstream& stream ) {
 	switch (status) {
 		case CHUNKED:
-			parseChunckedBody( stream );
+			parseChunked( stream );
 			break ;
 		case CHUNK_BOUND:
+			parseChunkedBoundaries( stream );
+			break ;
 		case BOUNDARIES:
 			parseBoundaries( stream );
 			break ;
 		case CONTENT_LENGTH:
-			parseBinary( stream );
-			break ;
 		case NO_CONTENT_LENGTH:
 			parseBinary( stream );
 			break ;
@@ -54,7 +54,7 @@ void	BodyParser::parseBinary( const istringstream& stream ) {
 	while ( !requestChunk.empty() ) {
 		cout << requestChunk << endl;
 		if ( !bodyStatus.initDone ) {
-			filename = generateRandomName( header_info.contentType );
+			filename = generateRandomName( headerInfo.contentType );
 			outfile.open( filename, std::ios::app | std::ios::binary );
 			if ( !outfile.is_open() ) throw runtime_error("failed to open - " + filename );
 			bodyStatus.initDone = true;
@@ -66,10 +66,10 @@ void	BodyParser::parseBinary( const istringstream& stream ) {
 			if ( status == CONTENT_LENGTH ) {
 				BodyLength += requestChunk.length();
 
-				if ( BodyLength == header_info.contentLength ) {
+				if ( BodyLength == headerInfo.contentLength ) {
 					bodyStatus.initDone = false;
 					if ( outfile.is_open() ) outfile.close();
-				} else if ( BodyLength > header_info.contentLength ) {
+				} else if ( BodyLength > headerInfo.contentLength ) {
 					if ( outfile.is_open() ) outfile.close();
 					remove(filename.c_str());
 					throw BAD_REQUEST;
@@ -81,14 +81,14 @@ void	BodyParser::parseBinary( const istringstream& stream ) {
 }
 
 void	BodyParser::parseFilenameBody( void ) {
-	size_t	pos		= requestChunk.find( header_info.boundary );
-	size_t	epos	= requestChunk.find( header_info.endBoundary );
+	size_t	pos		= requestChunk.find( headerInfo.boundary );
+	size_t	epos	= requestChunk.find( headerInfo.endBoundary );
 
-	if ( pos == std::string::npos && epos == std::string::npos ) {
+	if ( pos == string::npos && epos == string::npos ) {
 		outfile.write(requestChunk.c_str(), requestChunk.length());
 		requestChunk.clear();
 	}
-	if ( pos != std::string::npos ) { // Boundary FOUND
+	if ( pos != string::npos ) { // Boundary FOUND
 		string	remaingStr = requestChunk.substr( 0, pos - 2 );
 		requestChunk.erase( 0, pos );
 		outfile.write(remaingStr.c_str(), remaingStr.length());
@@ -100,7 +100,7 @@ void	BodyParser::parseFilenameBody( void ) {
 		outfile.close();
 		filename.clear();
 	}
-	else if ( epos != std::string::npos ) { // endBoundary FOUND
+	else if ( epos != string::npos ) { // endBoundary FOUND
 		requestChunk.erase( epos - 2 );
 		outfile.write(requestChunk.c_str(), requestChunk.length());
 		metaData.push_back(make_pair(name, filename));
@@ -112,14 +112,14 @@ void	BodyParser::parseFilenameBody( void ) {
 }
 
 void	BodyParser::parseNameBody( void ) {
-	size_t	pos		= requestChunk.find( header_info.boundary );
-	size_t	epos	= requestChunk.find( header_info.endBoundary );
+	size_t	pos		= requestChunk.find( headerInfo.boundary );
+	size_t	epos	= requestChunk.find( headerInfo.endBoundary );
 	
-	if ( pos == std::string::npos && epos == std::string::npos ) {
+	if ( pos == string::npos && epos == string::npos ) {
 		chunk.append(requestChunk);
 		requestChunk.clear();
 	}
-	if ( pos != std::string::npos ) { // Boundary FOUND
+	if ( pos != string::npos ) { // Boundary FOUND
 		string	remaingStr = requestChunk.substr( 0, pos - 2 );
 		requestChunk.erase( 0, pos );
 		chunk.append(remaingStr);
@@ -131,7 +131,7 @@ void	BodyParser::parseNameBody( void ) {
 		bodyStatus.initDone = false;
 		bodyStatus.isNa = false;
 	}
-	else if ( epos != std::string::npos ) { // endBoundary FOUND
+	else if ( epos != string::npos ) { // endBoundary FOUND
 		requestChunk.erase( epos - 2 );
 		chunk.append(requestChunk);
 		metaData.push_back(make_pair(name, chunk));
@@ -174,7 +174,7 @@ void	BodyParser::parseFilenameAttr( size_t& pos, size_t& npos ) {
 
 const string	BodyParser::getAttr( string& requestBody ) {
 	size_t	pos = requestBody.find(";");
-	if ( pos != std::string::npos ) {
+	if ( pos != string::npos ) {
 		return requestBody.substr( 0, pos - 1 );
 	}
 
@@ -187,18 +187,18 @@ void	BodyParser::parseBoundaries( const istringstream& stream ) {
 
 	while ( !requestChunk.empty() ) {
 		if ( !bodyStatus.initDone ) {
-			size_t	bd_pos = requestChunk.find( header_info.boundary );
-			if ( bd_pos == std::string::npos ) throw "BOUNDARY NOT FOUND";
+			size_t	bd_pos = requestChunk.find( headerInfo.boundary );
+			if ( bd_pos == string::npos ) throw "BOUNDARY NOT FOUND";
 
 			size_t	fl_pos = requestChunk.find( FILENAME );
 			size_t	npos = requestChunk.find( NAME );
 			size_t	crpos = requestChunk.find( DCRNL, npos );
 
-			if ( fl_pos != std::string::npos && fl_pos < crpos ) {
+			if ( fl_pos != string::npos && fl_pos < crpos ) {
 				parseFilenameAttr( fl_pos, npos );
 				bodyStatus.initDone = true;
 				bodyStatus.isUp = true;
-			} else if ( npos != std::string::npos ) {
+			} else if ( npos != string::npos ) {
 				parseNameAttr( npos );
 				bodyStatus.initDone = true;
 				bodyStatus.isNa = true;
@@ -214,24 +214,20 @@ void	BodyParser::parseBoundaries( const istringstream& stream ) {
 	}
 }
 
-void	BodyParser::parseChunckedBody( const istringstream& stream ) {
+void	BodyParser::parseChunked( const istringstream& stream ) {
 	requestChunk.append(stream.str());
 
 	while ( !requestChunk.empty() ) {
 		
 		if ( !bodyStatus.initDone ) {
-			filename = generateRandomName( header_info.contentType );
+			filename = generateRandomName( headerInfo.contentType );
 			outfile.open( filename, std::ios::app | std::ios::binary );
 			if ( !outfile.is_open() ) throw runtime_error("failed to open - " + filename );
 			bodyStatus.initDone = true;
 		} else if ( bodyStatus.initDone ) {
 			if ( !bodyStatus.perm ) {
-				// if ( bodyStatus.bodyDone ) {
-				// 	size_t	pos = requestChunk.find( CRNL );
-				// 	if ( pos == std::string::npos ) throw runtime_error( "CRNL not found" );
-				// 	requestChunk.erase(0, pos + 2);
-				// }
 				size_t	pos = requestChunk.find( CRNL );
+				if ( pos == string::npos ) throw runtime_error("CRNL not found - Chunk Length");
 				char *end;
 				chunkLength = static_cast<size_t>(strtol(requestChunk.substr(0, pos).c_str(), &end, 16));
 				if ( chunkLength == 0 ) {
@@ -242,10 +238,9 @@ void	BodyParser::parseChunckedBody( const istringstream& stream ) {
 				bodyStatus.perm = true;
 			}
 			if ( bodyStatus.perm ) {
-				// bodyStatus.bodyDone = true;
 				size_t	sLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
 				chunkLength -= sLength;
-				MChunk += requestChunk.substr(0, sLength);
+				MChunk.append(requestChunk.substr(0, sLength));
 				if ( !chunkLength ) {
 					bodyStatus.perm = false;
 					requestChunk.erase(0, sLength + 2);
@@ -258,6 +253,133 @@ void	BodyParser::parseChunckedBody( const istringstream& stream ) {
 	}
 }
 
+void	BodyParser::parseInerBoundary( const string& body ) {
+	size_t	bd_pos = body.find( headerInfo.boundary );
+	if ( bd_pos == string::npos || bd_pos != 0 ) throw "-- BOUNDARY NOT FOUND --";
+
+	size_t	filenamePos = body.find( FILENAME );
+	size_t	namePos = body.find( NAME );
+	size_t	crPos = body.find( DCRNL, namePos );
+
+	if ( filenamePos != string::npos && filenamePos < crPos ) {
+		filenamePos += 12;
+		namePos += 6;
+		size_t	epos = body.find( CRNL, filenamePos );
+		size_t	cpos = body.find( ";", namePos );
+		string	contentString = body.substr( filenamePos, epos - filenamePos );
+		string	contentStringName = body.substr( namePos, cpos - namePos );
+		filename = getAttr( contentString );
+		name = getAttr( contentStringName );
+		outfile.open( "_downloads/" + filename , std::ios::app | std::ios::binary ); // to be removed
+		if ( !outfile.is_open() ) throw runtime_error("-- failed to open - " + filename + " --");
+
+		size_t	dcrPos = body.find( DCRNL );
+		if ( dcrPos == string::npos) throw runtime_error("-- DCRNL not found --");
+		bodyStatus.isUp = true;
+	} else if ( namePos != string::npos ) {
+		namePos += 6;
+		size_t	epos = body.find( CRNL, namePos );
+		string	contentString = body.substr( namePos, epos - namePos );
+		name = getAttr( contentString );
+
+		size_t	dcrPos = body.find( DCRNL );
+		if ( dcrPos == string::npos) throw runtime_error("-- DCRNL not found --");
+		bodyStatus.isNa = true;
+	}
+	else throw BAD_REQUEST;
+}
+
+void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
+	requestChunk.append(stream.str());
+
+	while ( !requestChunk.empty() ) {
+		///////////////////////////////
+		/////// HEAD OF CHUNKED ///////
+		///////////////////////////////
+		if ( !bodyStatus.initDone ) {
+			size_t	pos = requestChunk.find( CRNL );
+			if ( pos == string::npos ) throw runtime_error("CRNL not found -- initDone");
+			
+			char *end;
+			chunkLength = static_cast<size_t>( strtol( requestChunk.substr(0, pos).c_str(), &end, 16 ) );
+			
+			requestChunk.erase( 0, pos + 2 );
+			size_t	sLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
+			MChunk += requestChunk.substr( 0, sLength );
+			chunkLength -= sLength;
+			if ( !chunkLength ) {
+				size_t	end_pos = MChunk.find( headerInfo.endBoundary );
+				if ( end_pos != string::npos ) {
+					requestChunk.clear();
+					MChunk.clear();
+					return ;
+				}
+				bodyStatus.initDone = true;
+				parseInerBoundary( MChunk );
+				MChunk.clear();
+			}
+			requestChunk.erase( 0, sLength + 2 );
+		}
+		///////////////////////////////
+		//// INNER BODY OF CHUNKED ////
+		///////////////////////////////
+		if ( bodyStatus.initDone ) {
+			
+			if ( !bodyStatus.bodyDone ) {
+				/// READ THE LENGTH IN HEX
+				/// AND CHECK FOR POTENTIAL BOUNDARY
+				size_t	pos = requestChunk.find( CRNL );
+				if ( pos == string::npos ) throw runtime_error("CRNL not found -- InnerBody");
+				char *end;
+				chunkLength = static_cast<size_t>( strtol( requestChunk.substr(0, pos).c_str(), &end, 16 ) );
+				requestChunk.erase(0, pos + 2);
+				bodyStatus.bodyDone = true;
+				size_t boundaryPos = requestChunk.find( headerInfo.boundary );
+				size_t endBoundaryPos = requestChunk.find( headerInfo.endBoundary );
+				if ( boundaryPos != string::npos || endBoundaryPos != string::npos ) {
+					bodyStatus.perm = true;
+					bodyStatus.initDone = false;
+					if ( boundaryPos == 0 ) bodyStatus.bodyDone = false, bodyStatus.initDone = false;
+					if ( endBoundaryPos == 2 ) {
+						requestChunk.clear();
+						MChunk.clear();
+						return ;
+					}
+				}
+			}
+			if ( bodyStatus.bodyDone ) {
+				/// STORE THE CHUNKED DATA
+				size_t	sLength = ( !bodyStatus.perm && chunkLength > requestChunk.length() ) ? requestChunk.length() : chunkLength;
+				chunkLength -= sLength;
+				const string& str = requestChunk.substr( 0, sLength );
+				if ( str != "\r\n" )
+					MChunk += str;
+				if ( !chunkLength ) {
+					bodyStatus.bodyDone = false;
+					requestChunk.erase( 0, sLength + 2 );
+					outfile.write( MChunk.c_str(), MChunk.length() );
+					outfile.flush();
+					MChunk.clear();
+					if ( bodyStatus.perm ) outfile.close(), bodyStatus.perm = false;
+				} else requestChunk.erase( 0, sLength );
+			}
+		}
+	}
+
+}
+
+/******
+} else if ( bodyStatus.isNa ) {
+	chunk += MChunk;
+	ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
+	nOutfile << chunk; // to be removed
+	nOutfile.close(); // to be removed
+	if ( bodyStatus.bodyDone )
+	metaData.push_back(make_pair(name, chunk)), chunk.clear();
+	MChunk.clear();
+}
+*/
+
 void	BodyParser::print() const {
 	cout << "============================" << endl;
 	for ( vector<pair<string, string> >::const_iterator it = metaData.begin(); it != metaData.end(); it++ ) {
@@ -266,8 +388,8 @@ void	BodyParser::print() const {
 	cout << "============================" << endl;
 }
 
-void	BodyParser::setHeaderInfo( HeaderInfo& header_info ) {
-	this->header_info = header_info;
+void	BodyParser::setHeaderInfo( HeaderInfo& headerInfo ) {
+	this->headerInfo = headerInfo;
 }
 
 void	BodyParser::setStatus( RequestStatus& status_info ) {

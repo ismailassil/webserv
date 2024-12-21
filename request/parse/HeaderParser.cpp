@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:38:45 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/17 12:42:48 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/20 18:24:14 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ bool	HeaderParser::isDoubleCRLF( istream& stream, const string& line ) {
 	size_t	pos = line.find("\r");
 
 	char s = stream.peek();
-	if ( pos != std::string::npos && s == '\r' && line.length() - 1 == pos )
+	if ( pos != string::npos && s == '\r' && line.length() - 1 == pos )
 		return true;
 
 	return false;
@@ -32,7 +32,7 @@ void	HeaderParser::parseLine(const string& line) {
 	string field, value;
 	size_t pos = line.find(':');
 
-	if (pos == std::string::npos)
+	if (pos == string::npos)
 		throw BAD_REQUEST;
 
 	field = line.substr(0, pos);
@@ -41,7 +41,9 @@ void	HeaderParser::parseLine(const string& line) {
 	value.erase(value.find_last_not_of(" \t"));
 	if ( field.empty() )
 		throw BAD_REQUEST;
-	transform(field.begin(), field.end(), field.begin(), ::tolower);
+	transform(field.begin(), field.end(), field.begin(), ::tolower );
+	if ( field == "transfer-encoding" || field == "content-type" )
+		transform( value.begin(), value.end(), value.begin(), ::tolower );
 	headers[field] = value;
 }
 

@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:07:39 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/18 09:28:53 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/20 15:44:45 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 
 class RequestParser {
 	protected:
-		RequestLine			requestLine;
-		map<string, string>	headers;
-		string				body;
-		bool				isDone;
+		RequestLine						requestLine;
+		map<string, string>				headers;
+		string							body;
+		vector<pair<string, string> >	metaData;
+		bool							isDone;
 
 	public:
-		RequestParser()
-			: isDone(false) {}
+		RequestParser();
 		virtual ~RequestParser() {}
 
 		virtual void	parse( istringstream& ) = 0;

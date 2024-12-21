@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:09:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/19 20:15:51 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/20 19:40:16 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,17 +45,21 @@ void	RequestBuilder::getRequestStatus() {
 	
 
 	if ( it_tr != requestHeader.end() ) {
-		if ( it_tr->second.find("chunked") != std::string::npos && it_ct != requestHeader.end() ) {
-			if ( it_ct->second.find("boundary") != std::string::npos )
+		if ( it_tr->second.find("chunked") != string::npos && it_ct != requestHeader.end() ) {
+			if ( ( boundary_start = it_ct->second.find("boundary") ) != string::npos ) {
+				boundary_start += 9;
+				boundary_end = it_ct->second.find("\r");
+				setBoundary( it_ct, boundary_start, boundary_end );
 				status = CHUNK_BOUND;
+			}
 			else status = CHUNKED;
 		}
 		return ;
-	} else if ( it_ct != requestHeader.end() && ( boundary_start = it_ct->second.find("boundary") ) != std::string::npos ) {
+	} else if ( it_ct != requestHeader.end() && ( boundary_start = it_ct->second.find("boundary") ) != string::npos ) {
 		boundary_start += 9;
 		boundary_end = it_ct->second.find("\r");
 
-		if ( boundary_start != std::string::npos ) {
+		if ( boundary_start != string::npos ) {
 			setBoundary( it_ct, boundary_start, boundary_end );
 			status = BOUNDARIES;
 			return;
@@ -100,7 +104,7 @@ void	RequestBuilder::build(const string& incomingRequest) {
 	if ( !isHeaderDone ) {
 
 		pos = rawRequest.find("\r\n\r\n");
-		if ( pos != std::string::npos ) {
+		if ( pos != string::npos ) {
 			parseRequestHeader(rawRequest);
 			getRequestStatus(), getHeaderInfos();
 			rawRequest.erase(0, pos + 4);
