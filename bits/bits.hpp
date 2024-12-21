@@ -28,7 +28,7 @@
 #include <cstddef> // IWYU pragma: keep
 #include <ios> // IWYU pragma: keep
 
-#define RED		"\x1b[1;31m"
+#define RED		"\x1b[31m"
 #define GREEN	"\x1b[1;32m"
 #define YELLOW	"\x1b[1;33m"
 #define BLUE	"\x1b[1;34m"
@@ -82,6 +82,9 @@ struct TaskStatus {
 	bool	perm;
 	bool	initDone;
 	bool	bodyDone;
+	bool	headDone;
+	bool	headLength;
+	bool	isbodySize;
 	bool	isUp;
 	bool	isNa;
 };

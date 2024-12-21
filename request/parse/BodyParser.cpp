@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/21 03:52:37 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/21 07:29:20 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@ BodyParser::BodyParser() : RequestParser() {
 	bodyStatus.perm= false;
 	bodyStatus.initDone = false;
 	bodyStatus.bodyDone = false;
+	bodyStatus.headDone = false;
+	bodyStatus.headLength = false;
+	bodyStatus.isbodySize = false;
 	bodyStatus.isUp = false;
 	bodyStatus.isNa = false;
 	BodyLength = 0;
@@ -253,7 +256,7 @@ void	BodyParser::parseChunked( const istringstream& stream ) {
 	}
 }
 
-void	BodyParser::parseInerBoundary( const string& body ) {
+void	BodyParser::parseInnerBoundary( const string& body ) {
 	size_t	bd_pos = body.find( headerInfo.boundary );
 	if ( bd_pos == string::npos || bd_pos != 0 ) throw "-- BOUNDARY NOT FOUND --";
 
@@ -289,81 +292,77 @@ void	BodyParser::parseInerBoundary( const string& body ) {
 	else throw BAD_REQUEST;
 }
 
+bool	BodyParser::isEndBoundary( void ) {
+	const string&	str = "\r\n" + requestChunk;
+	if ( str.find( headerInfo.endBoundary ) != string::npos )
+		return true;
+	return false;
+}
+
 void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 	requestChunk.append(stream.str());
 
 	while ( !requestChunk.empty() ) {
-		///////////////////////////////
-		/////// HEAD OF CHUNKED ///////
-		///////////////////////////////
-		if ( !bodyStatus.initDone ) {
-			size_t	pos = requestChunk.find( CRNL );
-			if ( pos == string::npos ) throw runtime_error("CRNL not found -- initDone");
-			
-			char *end;
-			chunkLength = static_cast<size_t>( strtol( requestChunk.substr(0, pos).c_str(), &end, 16 ) );
-			
-			requestChunk.erase( 0, pos + 2 );
-			size_t	sLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
-			MChunk += requestChunk.substr( 0, sLength );
-			chunkLength -= sLength;
-			if ( !chunkLength ) {
-				size_t	end_pos = MChunk.find( headerInfo.endBoundary );
-				if ( end_pos != string::npos ) {
-					requestChunk.clear();
-					MChunk.clear();
-					return ;
-				}
-				bodyStatus.initDone = true;
-				parseInerBoundary( MChunk );
+
+		if ( !bodyStatus.headDone ) {
+			if ( !bodyStatus.headLength ) {
+				size_t	pos = requestChunk.find(CRNL);
+				if ( pos == string::npos ) throw runtime_error("CRNL NOT FOUND - HEAD");
+				//////////////// GET NUMBER OF THE CHUNK HEAD
+				const string&	number = requestChunk.substr( 0, pos );
+				char	*end;
+				chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
+				requestChunk.erase( 0, pos + 2 );
+			}
+			//////////////// HANDLE BOUNDARY
+			size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
+			MChunk += requestChunk.substr( 0, currentLength );
+			chunkLength -= currentLength;
+			bodyStatus.headLength = !chunkLength;
+			if ( chunkLength == 0 ) {
+				if ( isEndBoundary() ) return ;
+				parseInnerBoundary( MChunk );
 				MChunk.clear();
+				bodyStatus.headLength = false;
+				bodyStatus.headDone = true;
+				currentLength += 2;
 			}
-			requestChunk.erase( 0, sLength + 2 );
+			requestChunk.erase( 0, currentLength );
 		}
-		///////////////////////////////
-		//// INNER BODY OF CHUNKED ////
-		///////////////////////////////
-		if ( bodyStatus.initDone ) {
-			
-			if ( !bodyStatus.bodyDone ) {
-				/// READ THE LENGTH IN HEX
-				/// AND CHECK FOR POTENTIAL BOUNDARY
+		if ( bodyStatus.headDone ) {
+			if ( !bodyStatus.isbodySize ) {
 				size_t	pos = requestChunk.find( CRNL );
-				if ( pos == string::npos ) throw runtime_error("CRNL not found -- InnerBody");
-				char *end;
-				chunkLength = static_cast<size_t>( strtol( requestChunk.substr(0, pos).c_str(), &end, 16 ) );
-				requestChunk.erase(0, pos + 2);
-				bodyStatus.bodyDone = true;
-				size_t boundaryPos = requestChunk.find( headerInfo.boundary );
-				size_t endBoundaryPos = requestChunk.find( headerInfo.endBoundary );
-				if ( boundaryPos != string::npos || endBoundaryPos != string::npos ) {
-					bodyStatus.perm = true;
-					bodyStatus.initDone = false;
-					if ( boundaryPos == 0 ) bodyStatus.bodyDone = false, bodyStatus.initDone = false;
-					if ( endBoundaryPos == 2 ) {
-						requestChunk.clear();
-						MChunk.clear();
-						return ;
-					}
+				if ( pos == string::npos ) throw runtime_error("CRNL NOT FOUND - BODY");
+				
+				//////////////// GET NUMBER OF THE CHUNK BODY
+				const string&	number = requestChunk.substr( 0, pos );
+				char	*end;
+				chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
+				requestChunk.erase( 0, pos + 2 );
+				bodyStatus.isbodySize = true;
+				if ( chunkLength == 2 ) {
+					requestChunk.erase( 0, 4 );
+					bodyStatus.isbodySize = false;
+					bodyStatus.headDone = false;
+					outfile.close();
 				}
+				if ( isEndBoundary() )
+					return ;
 			}
-			if ( bodyStatus.bodyDone ) {
-				/// STORE THE CHUNKED DATA
-				size_t	sLength = ( !bodyStatus.perm && chunkLength > requestChunk.length() ) ? requestChunk.length() : chunkLength;
-				chunkLength -= sLength;
-				const string& str = requestChunk.substr( 0, sLength );
-				if ( str != "\r\n" )
-					MChunk += str;
-				if ( !chunkLength ) {
-					bodyStatus.bodyDone = false;
-					requestChunk.erase( 0, sLength + 2 );
+			if ( bodyStatus.isbodySize ) {
+				size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
+				chunkLength -= currentLength;
+				MChunk += requestChunk.substr( 0, currentLength );
+				if ( chunkLength == 0 ) {
+					bodyStatus.isbodySize = false;
 					outfile.write( MChunk.c_str(), MChunk.length() );
 					outfile.flush();
 					MChunk.clear();
-					if ( bodyStatus.perm ) outfile.close(), bodyStatus.perm = false;
-				} else requestChunk.erase( 0, sLength );
+				}
+				requestChunk.erase( 0, currentLength );
 			}
 		}
+
 	}
 
 }

@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/20 20:10:15 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/21 07:16:18 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,9 @@ class BodyParser : public RequestParser {
 		void	parseFilenameBody( void );
 		void	parseNameBody( void );
 
-		void	parseInerBoundary( const string& body );
+		bool	isEndBoundary( void );
+
+		void	parseInnerBoundary( const string& body );
 		
 		const string	getAttr( string& );
 
