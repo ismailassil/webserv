@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/21 07:29:20 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 06:36:35 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,20 +293,20 @@ void	BodyParser::parseInnerBoundary( const string& body ) {
 }
 
 bool	BodyParser::isEndBoundary( void ) {
-	const string&	str = "\r\n" + requestChunk;
-	if ( str.find( headerInfo.endBoundary ) != string::npos )
-		return true;
+	size_t	pos = requestChunk.find( "\r\n" + headerInfo.endBoundary );
+
+	if ( pos != string::npos && pos == 0 ) return true;
 	return false;
 }
 
 void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
-	requestChunk.append(stream.str());
+	requestChunk += stream.str();
 
 	while ( !requestChunk.empty() ) {
 
 		if ( !bodyStatus.headDone ) {
 			if ( !bodyStatus.headLength ) {
-				size_t	pos = requestChunk.find(CRNL);
+				size_t	pos = requestChunk.find( CRNL );
 				if ( pos == string::npos ) throw runtime_error("CRNL NOT FOUND - HEAD");
 				//////////////// GET NUMBER OF THE CHUNK HEAD
 				const string&	number = requestChunk.substr( 0, pos );
@@ -320,7 +320,20 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 			chunkLength -= currentLength;
 			bodyStatus.headLength = !chunkLength;
 			if ( chunkLength == 0 ) {
-				if ( isEndBoundary() ) return ;
+				if ( isEndBoundary() ) {
+					if ( bodyStatus.isUp ) {
+						metaData.push_back(make_pair(name, filename));
+						outfile.close();
+						bodyStatus.isUp = false;
+					} else if ( bodyStatus.isNa ) {
+						ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
+						nOutfile << chunk; // to be removed
+						nOutfile.close(); // to be removed
+						metaData.push_back(make_pair(name, chunk)), chunk.clear();
+						bodyStatus.isNa = false;
+					}
+					return ;
+				}
 				parseInnerBoundary( MChunk );
 				MChunk.clear();
 				bodyStatus.headLength = false;
@@ -329,11 +342,17 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 			}
 			requestChunk.erase( 0, currentLength );
 		}
-		if ( bodyStatus.headDone ) {
+		if ( bodyStatus.headDone && !requestChunk.empty() ) {
 			if ( !bodyStatus.isbodySize ) {
 				size_t	pos = requestChunk.find( CRNL );
-				if ( pos == string::npos ) throw runtime_error("CRNL NOT FOUND - BODY");
-				
+				if ( pos == string::npos ) {
+					const string&	number = requestChunk.substr( 0, pos );
+					char	*end;
+					chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
+					if ( *end == '\0' )
+						return ;
+					throw runtime_error("CRNL NOT FOUND - BODY -");
+				}
 				//////////////// GET NUMBER OF THE CHUNK BODY
 				const string&	number = requestChunk.substr( 0, pos );
 				char	*end;
@@ -344,10 +363,32 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 					requestChunk.erase( 0, 4 );
 					bodyStatus.isbodySize = false;
 					bodyStatus.headDone = false;
-					outfile.close();
+					if ( bodyStatus.isUp ) {
+						metaData.push_back(make_pair(name, filename));
+						outfile.close();
+						bodyStatus.isUp = false;
+					} else if ( bodyStatus.isNa ) {
+						ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
+						nOutfile << chunk; // to be removed
+						nOutfile.close(); // to be removed
+						metaData.push_back(make_pair(name, chunk)), chunk.clear();		
+						bodyStatus.isNa = false;
+					}
 				}
-				if ( isEndBoundary() )
+				if ( isEndBoundary() ) {
+					if ( bodyStatus.isUp ) {
+						metaData.push_back(make_pair(name, filename));
+						outfile.close();
+						bodyStatus.isUp = false;
+					} else if ( bodyStatus.isNa ) {
+						ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
+						nOutfile << chunk; // to be removed
+						nOutfile.close(); // to be removed
+						metaData.push_back(make_pair(name, chunk)), chunk.clear();
+						bodyStatus.isNa = false;
+					}
 					return ;
+				}
 			}
 			if ( bodyStatus.isbodySize ) {
 				size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
@@ -355,9 +396,14 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 				MChunk += requestChunk.substr( 0, currentLength );
 				if ( chunkLength == 0 ) {
 					bodyStatus.isbodySize = false;
-					outfile.write( MChunk.c_str(), MChunk.length() );
-					outfile.flush();
+					if ( bodyStatus.isUp ) {
+						outfile.write( MChunk.c_str(), MChunk.length() );
+						outfile.flush();
+					} else if ( bodyStatus.isNa ) {
+						chunk += MChunk;
+					}
 					MChunk.clear();
+					currentLength += 2;
 				}
 				requestChunk.erase( 0, currentLength );
 			}
@@ -373,7 +419,6 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 	ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
 	nOutfile << chunk; // to be removed
 	nOutfile.close(); // to be removed
-	if ( bodyStatus.bodyDone )
 	metaData.push_back(make_pair(name, chunk)), chunk.clear();
 	MChunk.clear();
 }

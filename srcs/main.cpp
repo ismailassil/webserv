@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:36:29 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/21 04:40:13 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 04:13:25 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,20 +76,27 @@ int main() {
 			std::ofstream sss("chunks.py", std::ios::app | std::ios::binary);
 			ss.write(buf.c_str(), buf.length());
 
-			sss << "\n===========================================================\n";
+			sss << "\n=================== Step: [" << step << "] ========================================\n";
 			sss.write(buf.c_str(), buf.length());
 			// double start = clock();
 
 			try {
-
+				/////////////////////////////////////////
+				/////////////////////////////////////////
+				/////////////////////////////////////////
 				req.build(buf);
+				/////////////////////////////////////////
+				/////////////////////////////////////////
+				/////////////////////////////////////////
 
 				// Output the elapsed time
 				// std::cout << "Time for req.build(buf): " << double(clock() - start) / CLOCKS_PER_SEC * 1000.0 << "ms" << endl;
 			} catch (const char* e) {
 				std::cerr << "Error: " << e << std::endl;
+				exit(1);
 			} catch (const std::exception& ee) {
 				std::cerr << "Error: " << ee.what() << std::endl;
+				exit(1);
 			}
 			std::cout << "=======" << step++ << "=======" << std::endl;
 		}

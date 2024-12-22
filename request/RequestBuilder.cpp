@@ -6,12 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:09:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/20 19:40:16 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 01:58:07 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../bits/RequestBuilder.hpp"
-#include <cstddef>
 
 void	RequestBuilder::parseRequestHeader( const string& RawRequest ) {
 	istringstream	stream(RawRequest);
@@ -100,7 +99,7 @@ void	RequestBuilder::setBoundary( map<string, string>::iterator& it, size_t& spo
 void	RequestBuilder::build(const string& incomingRequest) {
 	size_t			pos;
 	
-	rawRequest.append(incomingRequest);
+	rawRequest.append( incomingRequest );
 	if ( !isHeaderDone ) {
 
 		pos = rawRequest.find("\r\n\r\n");
@@ -110,9 +109,8 @@ void	RequestBuilder::build(const string& incomingRequest) {
 			rawRequest.erase(0, pos + 4);
 			isHeaderDone = true;
 		}
-		return ;
 	}
-	if ( !rawRequest.empty() ) {
+	if ( isHeaderDone && !rawRequest.empty() ) {
 		parseRequestBody(rawRequest);
 		rawRequest.clear();
 	}

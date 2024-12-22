@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:38:45 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/20 18:24:14 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 01:46:52 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,14 +50,14 @@ void	HeaderParser::parseLine(const string& line) {
 void	HeaderParser::parse( istringstream& stream ) {
 	string	line;
 
-	while (getline(stream, line, '\n')) {
-		if ( line.empty() || line == "\r" || !isValidHeader(line) )
+	while ( getline( stream, line, '\n' ) ) {
+		if ( line.empty() || line == "\r" || !isValidHeader( line ) )
 			throw BAD_REQUEST;
-		parseLine(line);
-		if ( isDoubleCRLF(stream, line) )
+		parseLine( line );
+		if ( isDoubleCRLF( stream, line ) )
 			break ;
 	}
-	if (headers.find(HOST) == headers.end()) throw BAD_REQUEST;
+	if ( headers.find( HOST ) == headers.end() ) throw BAD_REQUEST;
 }
 
 void	HeaderParser::print() const {
