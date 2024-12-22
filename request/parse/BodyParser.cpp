@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/22 06:36:35 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 07:28:26 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,8 +295,94 @@ void	BodyParser::parseInnerBoundary( const string& body ) {
 bool	BodyParser::isEndBoundary( void ) {
 	size_t	pos = requestChunk.find( "\r\n" + headerInfo.endBoundary );
 
-	if ( pos != string::npos && pos == 0 ) return true;
+	if ( pos != string::npos && pos == 0 ) {
+		pushChunk();
+		return true;
+	}
 	return false;
+}
+
+void	BodyParser::pushChunk( void ) {
+	if ( bodyStatus.isUp ) {
+		metaData.push_back(make_pair(name, filename));
+		outfile.close();
+		bodyStatus.isUp = false;
+	} else if ( bodyStatus.isNa ) {
+		ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
+		nOutfile << chunk; // to be removed
+		nOutfile.close(); // to be removed
+		metaData.push_back(make_pair(name, chunk)), chunk.clear();
+		bodyStatus.isNa = false;
+	}
+}
+
+bool	BodyParser::parseHeadBody( void ) {
+	if ( !bodyStatus.headLength ) {
+		size_t	pos = requestChunk.find( CRNL );
+		if ( pos == string::npos ) throw runtime_error("CRNL NOT FOUND - HEAD");
+
+		const string&	number = requestChunk.substr( 0, pos );
+		char	*end;
+		chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
+		requestChunk.erase( 0, pos + 2 );
+	}
+	size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
+	MChunk += requestChunk.substr( 0, currentLength );
+	chunkLength -= currentLength;
+	bodyStatus.headLength = !chunkLength;
+	if ( chunkLength == 0 ) {
+		if ( isEndBoundary() ) return true ;
+		parseInnerBoundary( MChunk );
+		MChunk.clear();
+		bodyStatus.headLength = false;
+		bodyStatus.headDone = true;
+		currentLength += 2;
+	}
+	requestChunk.erase( 0, currentLength );
+	return false;
+}
+
+bool	BodyParser::parseBodyLength( void ) {
+	size_t	pos = requestChunk.find( CRNL );
+	if ( pos == string::npos ) {
+		const string&	number = requestChunk.substr( 0, pos );
+		char	*end;
+		chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
+		if ( *end == '\0' )
+			return true ;
+		throw runtime_error("CRNL NOT FOUND - BODY -");
+	}
+	const string&	number = requestChunk.substr( 0, pos );
+	char	*end;
+	chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
+	requestChunk.erase( 0, pos + 2 );
+	bodyStatus.isbodySize = true;
+	if ( chunkLength == 2 ) {
+		requestChunk.erase( 0, 4 );
+		bodyStatus.isbodySize = false;
+		bodyStatus.headDone = false;
+		pushChunk();
+	}
+	if ( isEndBoundary() ) return true ;
+	return false;
+}
+
+void	BodyParser::parseBodyChunk( void ) {
+	size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
+	chunkLength -= currentLength;
+	MChunk += requestChunk.substr( 0, currentLength );
+	if ( chunkLength == 0 ) {
+		bodyStatus.isbodySize = false;
+		if ( bodyStatus.isUp ) {
+			outfile.write( MChunk.c_str(), MChunk.length() );
+			outfile.flush();
+		} else if ( bodyStatus.isNa ) {
+			chunk += MChunk;
+		}
+		MChunk.clear();
+		currentLength += 2;
+	}
+	requestChunk.erase( 0, currentLength );
 }
 
 void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
@@ -305,107 +391,16 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 	while ( !requestChunk.empty() ) {
 
 		if ( !bodyStatus.headDone ) {
-			if ( !bodyStatus.headLength ) {
-				size_t	pos = requestChunk.find( CRNL );
-				if ( pos == string::npos ) throw runtime_error("CRNL NOT FOUND - HEAD");
-				//////////////// GET NUMBER OF THE CHUNK HEAD
-				const string&	number = requestChunk.substr( 0, pos );
-				char	*end;
-				chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
-				requestChunk.erase( 0, pos + 2 );
-			}
-			//////////////// HANDLE BOUNDARY
-			size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
-			MChunk += requestChunk.substr( 0, currentLength );
-			chunkLength -= currentLength;
-			bodyStatus.headLength = !chunkLength;
-			if ( chunkLength == 0 ) {
-				if ( isEndBoundary() ) {
-					if ( bodyStatus.isUp ) {
-						metaData.push_back(make_pair(name, filename));
-						outfile.close();
-						bodyStatus.isUp = false;
-					} else if ( bodyStatus.isNa ) {
-						ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
-						nOutfile << chunk; // to be removed
-						nOutfile.close(); // to be removed
-						metaData.push_back(make_pair(name, chunk)), chunk.clear();
-						bodyStatus.isNa = false;
-					}
-					return ;
-				}
-				parseInnerBoundary( MChunk );
-				MChunk.clear();
-				bodyStatus.headLength = false;
-				bodyStatus.headDone = true;
-				currentLength += 2;
-			}
-			requestChunk.erase( 0, currentLength );
+			if ( parseHeadBody() )
+				return ;
 		}
 		if ( bodyStatus.headDone && !requestChunk.empty() ) {
 			if ( !bodyStatus.isbodySize ) {
-				size_t	pos = requestChunk.find( CRNL );
-				if ( pos == string::npos ) {
-					const string&	number = requestChunk.substr( 0, pos );
-					char	*end;
-					chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
-					if ( *end == '\0' )
-						return ;
-					throw runtime_error("CRNL NOT FOUND - BODY -");
-				}
-				//////////////// GET NUMBER OF THE CHUNK BODY
-				const string&	number = requestChunk.substr( 0, pos );
-				char	*end;
-				chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
-				requestChunk.erase( 0, pos + 2 );
-				bodyStatus.isbodySize = true;
-				if ( chunkLength == 2 ) {
-					requestChunk.erase( 0, 4 );
-					bodyStatus.isbodySize = false;
-					bodyStatus.headDone = false;
-					if ( bodyStatus.isUp ) {
-						metaData.push_back(make_pair(name, filename));
-						outfile.close();
-						bodyStatus.isUp = false;
-					} else if ( bodyStatus.isNa ) {
-						ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
-						nOutfile << chunk; // to be removed
-						nOutfile.close(); // to be removed
-						metaData.push_back(make_pair(name, chunk)), chunk.clear();		
-						bodyStatus.isNa = false;
-					}
-				}
-				if ( isEndBoundary() ) {
-					if ( bodyStatus.isUp ) {
-						metaData.push_back(make_pair(name, filename));
-						outfile.close();
-						bodyStatus.isUp = false;
-					} else if ( bodyStatus.isNa ) {
-						ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
-						nOutfile << chunk; // to be removed
-						nOutfile.close(); // to be removed
-						metaData.push_back(make_pair(name, chunk)), chunk.clear();
-						bodyStatus.isNa = false;
-					}
+				if ( parseBodyLength() )
 					return ;
-				}
 			}
 			if ( bodyStatus.isbodySize ) {
-				size_t	currentLength = chunkLength > requestChunk.length() ? requestChunk.length() : chunkLength;
-				chunkLength -= currentLength;
-				MChunk += requestChunk.substr( 0, currentLength );
-				if ( chunkLength == 0 ) {
-					bodyStatus.isbodySize = false;
-					if ( bodyStatus.isUp ) {
-						outfile.write( MChunk.c_str(), MChunk.length() );
-						outfile.flush();
-					} else if ( bodyStatus.isNa ) {
-						chunk += MChunk;
-					}
-					MChunk.clear();
-					currentLength += 2;
-				}
-				requestChunk.erase( 0, currentLength );
+				parseBodyChunk();
 			}
 		}
 

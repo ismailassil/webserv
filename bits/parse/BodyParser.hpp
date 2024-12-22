@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/21 07:16:18 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 07:28:33 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,15 @@ class BodyParser : public RequestParser {
 		void	parseFilenameBody( void );
 		void	parseNameBody( void );
 
-		bool	isEndBoundary( void );
-
+		bool	parseHeadBody( void );
+		bool	parseBodyLength( void );
+		void	parseBodyChunk( void );
 		void	parseInnerBoundary( const string& body );
+		void	pushChunk( void );
+		bool	isEndBoundary( void );
 		
-		const string	getAttr( string& );
-
 		static const string generateRandomName( const string& );
+		const string	getAttr( string& );
 
 	public:
 		BodyParser();
