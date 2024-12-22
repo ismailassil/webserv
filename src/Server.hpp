@@ -16,8 +16,9 @@ class Server {
 		std::vector<Location>		locations;
 	public:
 		void	setDirectives(std::map<std::string, std::vector<std::string> > directives);
-		void	setListen(std::string key, std::vector<std::string> values);
-		void	setServerName(std::string key, std::vector<std::string> values);
+		void	setListen(std::vector<std::string> values);
+		void	setBodySize(std::vector<std::string> values);
+		void	setServerName(std::vector<std::string> values);
+		void	setErrorPages(std::vector<std::string> values);
 		void	addLocation(Location location);
-		void	clear_server();
 };

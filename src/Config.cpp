@@ -10,7 +10,7 @@ const std::vector<Server>& Config::getServers() const
 void Config::tokenize(const std::string& configContent, std::vector<std::string>& tokens)
 {
     std::string currentToken;
-    for (size_t i = 0; i < configContent.size(); ++i)
+    for (size_t i = 0; i < configContent.size(); i++)
     {
         char c = configContent[i];
         if (c == '{' || c == '}' || c == ';')
@@ -32,7 +32,7 @@ void Config::tokenize(const std::string& configContent, std::vector<std::string>
         else if (c == '#')
         {
             while (i < configContent.size() && configContent[i] != '\n') {
-                ++i;
+                i++;
             }
         }
         else
@@ -51,43 +51,33 @@ void Config::parseConfigFile(const std::string &filePath)
     std::vector<std::string> tokens;
 
     if (!file.is_open())
-        throw ("Error\n"); // to edit
+        throw std::runtime_error("Error: Can't Open Configuration File");
     while (std::getline(file, line))
         fileContent += line;
     tokenize(fileContent, tokens);
-    std::vector<std::string> it;
-    for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it)
-        printf("%s\n", it->c_str());
     parseTokens(tokens);
 }
 
-void Config::validateToken(const std::string& token, const std::string& context)
+bool Config::isValidPath(const std::string& path)
 {
-    static const std::set<std::string> validGlobalTokens = {"server"};
-    static const std::set<std::string> validServerTokens = {"listen", "server_name", "location"};
-    static const std::set<std::string> validLocationTokens = {"root", "autoindex", "index", "upload_path"};
-
-    const std::set<std::string>* validTokens = NULL;
-
-    if (context == "global") {
-        validTokens = &validGlobalTokens;
-    } else if (context == "server") {
-        validTokens = &validServerTokens;
-    } else if (context == "location") {
-        validTokens = &validLocationTokens;
-    } else {
-        throw std::runtime_error("Error: Unknown context '" + context + "'");
+    if (path.empty() || path[0] != '/')
+        return false;
+    for (size_t i = 0; i < path.size(); i++)
+    {
+        if (path[i] == ' ' || path[i] == '\t')
+        {
+            return false;
+        }
     }
-    if (validTokens->find(token) == validTokens->end()) {
-        throw std::runtime_error("Error: Invalid token '" + token + "' in context '" + context + "'");
-    }
+
+    return true;
 }
 
 int Config::extractLocationContext(const std::vector<std::string>& tokens, int startIndex, Location& location)
 {
     std::map<std::string, std::vector<std::string> > directives;
 
-    for (int i = startIndex; i < tokens.size(); ++i) {
+    for (size_t i = startIndex; i < tokens.size(); i++) {
         if (tokens[i] == "}")
         {
             location.setDirectives(directives);
@@ -96,13 +86,23 @@ int Config::extractLocationContext(const std::vector<std::string>& tokens, int s
         else
         {
             std::string key = tokens[i];
-            if (i + 1 < tokens.size() && tokens[i + 1] != ";" && tokens[i + 1] != "{" && tokens[i + 1] != "}") {
-                std::string value = tokens[i + 1];
-                directives[key].push_back(value);
+            if (i + 1 < tokens.size())
+            {
                 i++;
+                while (i < tokens.size() && tokens[i] != ";" && tokens[i] != "{" && tokens[i] != "}")
+                {
+                    directives[key].push_back(tokens[i]);
+                    i++;
+                }
+                if (i >= tokens.size() || tokens[i] != ";")
+                    throw std::runtime_error("Error: Missing ';' after values for key '" + key + "'");
             }
+
             else
-                throw std::runtime_error("Error: Invalid directive syntax near '" + key + "'");
+            {
+                printf("===== %s ====\n", key.c_str());
+                throw std::runtime_error("Error: Invalid directive syntax near 1 '" + key + "'");
+            }
         }
     }
 
@@ -113,7 +113,7 @@ int Config::extractServerContext(const std::vector<std::string>& tokens, int sta
 {
     std::map<std::string, std::vector<std::string> > directives;
 
-    for (int i = startIndex; i < tokens.size(); ++i)
+    for (size_t i = startIndex; i < tokens.size(); i++)
     {
         if (tokens[i] == "}")
         {
@@ -122,26 +122,38 @@ int Config::extractServerContext(const std::vector<std::string>& tokens, int sta
         }
         else if (tokens[i] == "location")
         {
-            if (i + 1 < tokens.size() && tokens[i + 1] == "{")
+            if (i + 3 < tokens.size() && tokens[i + 1] != "{" && tokens[i + 2] == "{")
             {
-                Location location;
-                i = extractLocationContext(tokens, i + 2, location);
+                std::string locationPath = tokens[i + 1];
+                if (!isValidPath(locationPath))
+                    throw std::runtime_error("Error: Invalid path for 'location': " + locationPath);
+                Location location(locationPath);
+                i = extractLocationContext(tokens, i + 3, location);
                 server.addLocation(location);
             }
             else
-                throw std::runtime_error("Error: 'location' must be followed by '{'");
+                throw std::runtime_error("Error: Invalid syntax for 'location'");
         }
         else
         {
             std::string key = tokens[i];
-            if (i + 1 < tokens.size() && tokens[i + 1] != ";" && tokens[i + 1] != "{" && tokens[i + 1] != "}")
+            if (i + 1 < tokens.size())
             {
-                std::string value = tokens[i + 1];
-                directives[key].push_back(value);
                 i++;
+                while (i < tokens.size() && tokens[i] != ";" && tokens[i] != "{" && tokens[i] != "}")
+                {
+                    directives[key].push_back(tokens[i]);
+                    i++;
+                }
+                if (i >= tokens.size() || tokens[i] != ";")
+                    throw std::runtime_error("Error: Missing ';' after values for key '" + key + "'");
             }
+
             else
-                throw std::runtime_error("Error: Invalid directive syntax near '" + key + "'");
+            {
+                printf("===== %s ====\n", key.c_str());
+                throw std::runtime_error("Error: Invalid directive syntax near 2 '" + key + "'");
+            }
         }
     }
 
@@ -150,19 +162,18 @@ int Config::extractServerContext(const std::vector<std::string>& tokens, int sta
 
 void Config::parseTokens(const std::vector<std::string>& tokens)
 {
-    Server currentServer;
     bool serverFound = false;
 
-    for (int i = 0; i < tokens.size(); i++)
+    for (size_t i = 0; i < tokens.size(); i++)
     {
         if (tokens[i] == "server")
         {
+            Server currentServer;
             if (i + 1 < tokens.size() && tokens[i + 1] == "{")
             {
                 serverFound = true;
                 i = extractServerContext(tokens, i + 2, currentServer);
                 servers.push_back(currentServer);
-                currentServer.clear_server();
             }
             else
                 throw std::runtime_error("Error: 'server' must be followed by '{'");
