@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/20 21:00:46 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/22 21:58:16 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,10 +39,9 @@ PRS_OBJ		=	$(addprefix $(FLD_NAME)/,$(PRS_SRC:.cpp=.o))
 OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
 
 ########### Goal Target
-all: $(NAME)
+all: files $(NAME)
 
-run: art $(NAME)
-	@$(RM) _downloads/* *.py
+run: $(NAME) files art
 	@./$(NAME)
 
 $(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)
@@ -60,12 +59,13 @@ $(FLD_NAME)/request/parse/%.o: ./request/parse/%.cpp $(PARSE_HEADER)
 ######################################################
 $(NAME): $(OBJ)
 	@echo "$(YELLOW)[ ~ ] Compilation of the Objects files...$(RESET)"
-	@$(RM) Request.py chunks.py
 	@$(CPP) $^ -o $@
 	@echo "$(GREEN)[ ✓ ] Executable file Compiled Successfully!$(RESET)"
 
+files:
+	@$(RM) *.py _downloads/*
 
-clean:
+clean: files
 	@echo "$(YELLOW)[ ~ ] Removing Object files $(RESET)"
 	@$(RM) $(OBJ)
 	@$(RM) -rf $(FLD_NAME)
@@ -80,20 +80,32 @@ re: fclean all
 
 .PHONY: all fclean clean re
 
+###################################################
+###################################################
+TERM_WIDTH := $(shell tput cols)
+
+PADDING := $(shell expr $(TERM_WIDTH) - 74)
+ifeq ($(shell test $(PADDING) -lt 0; echo $$?),0)
+    PADDING := 0
+endif
+PADDING := $(shell expr $(PADDING) / 2)
+PAD := $(shell printf '%*s' $(PADDING) '')
+###################################################
+###################################################
 
 art:
 	@echo ""
 	@echo ""
-	@echo "\t$(LIGHT_RED) █     █░▓█████  ▄▄▄▄     ██████ ▓█████  ██▀███   ██▒   █▓ $(RESET)"
-	@echo "\t$(LIGHT_RED)▓█░ █ ░█░▓█   ▀ ▓█████▄ ▒██    ▒ ▓█   ▀ ▓██ ▒ ██▒▓██░   █▒ $(RESET)"
-	@echo "\t$(LIGHT_RED)▒█░ █ ░█ ▒███   ▒██▒ ▄██░ ▓██▄   ▒███   ▓██ ░▄█ ▒ ▓██  █▒░ $(RESET)"
-	@echo "\t$(RED)░█░ █ ░█ ▒▓█  ▄ ▒██░█▀    ▒   ██▒▒▓█  ▄ ▒██▀▀█▄    ▒██ █░░ $(RESET)"
-	@echo "\t$(RED)░░██▒██▓ ░▒████▒░▓█  ▀█▓▒██████▒▒░▒████▒░██▓ ▒██▒   ▒▀█░   $(RESET)"
-	@echo "\t$(RED)░ ▓░▒ ▒  ░░ ▒░ ░░▒▓███▀▒▒ ▒▓▒ ▒ ░░░ ▒░ ░░ ▒▓ ░▒▓░   ░ ▐░   $(RESET)"
-	@echo "\t$(RED)  ▒ ░ ░   ░ ░  ░▒░▒   ░ ░ ░▒  ░ ░ ░ ░  ░  ░▒ ░ ▒░   ░ ░░   $(RESET)"
-	@echo "\t$(DARK_RED)  ░   ░     ░    ░    ░ ░  ░  ░     ░     ░░   ░      ░░   $(RESET)"
-	@echo "\t$(DARK_RED)    ░       ░  ░ ░            ░     ░  ░   ░           ░   $(RESET)"
-	@echo "\t$(DARK_RED)                      ░                               ░   $(RESET)"
+	@echo "$(PAD)$(LIGHT_RED) █     █░▓█████  ▄▄▄▄     ██████ ▓█████  ██▀███   ██▒   █▓ $(RESET)"
+	@echo "$(PAD)$(LIGHT_RED)▓█░ █ ░█░▓█   ▀ ▓█████▄ ▒██    ▒ ▓█   ▀ ▓██ ▒ ██▒▓██░   █▒ $(RESET)"
+	@echo "$(PAD)$(LIGHT_RED)▒█░ █ ░█ ▒███   ▒██▒ ▄██░ ▓██▄   ▒███   ▓██ ░▄█ ▒ ▓██  █▒░ $(RESET)"
+	@echo "$(PAD)$(RED)░█░ █ ░█ ▒▓█  ▄ ▒██░█▀    ▒   ██▒▒▓█  ▄ ▒██▀▀█▄    ▒██ █░░ $(RESET)"
+	@echo "$(PAD)$(RED)░░██▒██▓ ░▒████▒░▓█  ▀█▓▒██████▒▒░▒████▒░██▓ ▒██▒   ▒▀█░   $(RESET)"
+	@echo "$(PAD)$(RED)░ ▓░▒ ▒  ░░ ▒░ ░░▒▓███▀▒▒ ▒▓▒ ▒ ░░░ ▒░ ░░ ▒▓ ░▒▓░   ░ ▐░   $(RESET)"
+	@echo "$(PAD)$(RED)  ▒ ░ ░   ░ ░  ░▒░▒   ░ ░ ░▒  ░ ░ ░ ░  ░  ░▒ ░ ▒░   ░ ░░   $(RESET)"
+	@echo "$(PAD)$(DARK_RED)  ░   ░     ░    ░    ░ ░  ░  ░     ░     ░░   ░      ░░   $(RESET)"
+	@echo "$(PAD)$(DARK_RED)    ░       ░  ░ ░            ░     ░  ░   ░           ░   $(RESET)"
+	@echo "$(PAD)$(DARK_RED)                      ░                               ░   $(RESET)"
 	@echo ""
 	@echo ""
 

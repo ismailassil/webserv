@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/22 07:28:26 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/22 20:31:22 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,7 +357,7 @@ bool	BodyParser::parseBodyLength( void ) {
 	chunkLength = static_cast<size_t>( strtol(number.c_str(), &end, 16) );
 	requestChunk.erase( 0, pos + 2 );
 	bodyStatus.isbodySize = true;
-	if ( chunkLength == 2 ) {
+	if ( chunkLength == 2 && requestChunk.substr(0, 2) == "\r\n" ) {
 		requestChunk.erase( 0, 4 );
 		bodyStatus.isbodySize = false;
 		bodyStatus.headDone = false;
@@ -407,17 +407,6 @@ void	BodyParser::parseChunkedBoundaries( const istringstream& stream ) {
 	}
 
 }
-
-/******
-} else if ( bodyStatus.isNa ) {
-	chunk += MChunk;
-	ofstream nOutfile( "_downloads/" + name , std::ios::app | std::ios::binary ); // to be removed
-	nOutfile << chunk; // to be removed
-	nOutfile.close(); // to be removed
-	metaData.push_back(make_pair(name, chunk)), chunk.clear();
-	MChunk.clear();
-}
-*/
 
 void	BodyParser::print() const {
 	cout << "============================" << endl;
