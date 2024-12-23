@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 10:44:55 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/20 15:45:05 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 13:12:56 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../bits/RequestParser.hpp"
+#include "../headers/RequestParser.hpp"
 
 RequestParser::RequestParser() : isDone(false) {}
 

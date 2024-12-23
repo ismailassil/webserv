@@ -1,57 +1,11 @@
+# Request Diagram
+
 ```mermaid
+
 classDiagram
-    class requestLine {
-        +string method
-        +string uri
-        +string httpv
-    }
-
-    class RequestParser {
-        <<Abstract>>
-        -requestLine requestLine
-        -map<string, string> headers
-        -string body
-        +~RequestParser()
-        +~parse(istringstream& stream)~*
-        +~print()~*
-        +getRequestLine() : requestLine&
-        +getHeaders() : map<string, string>&
-        +getBody() : string&
-    }
-
-    class RequestBuilder {
-        -string rawRequestHeader
-        -bool isHeaderDone
-        -req_stat req_status
-        -t_HInfos header_info
-        -Request* req
-        +RequestBuilder()
-        +~RequestBuilder()
-        +requestProcess(const string& comingRequest)
-    }
-
-    class Request {
-        -RequestLineParser* requestLineParser
-        -HeaderParser* headerParser
-        -BodyParser* bodyParser
-        -vector<RequestParser*> request
-        -req_stat req_status
-        -t_HInfos header_infos
-        -Request& operator=(const Request&)
-        -Request(const Request&)
-        +Request()
-        +~Request()
-        +parseRequestHeader(const string& RawRequest)
-        +parseRequestBody(const string& RawRequest, t_HInfos& header_info)
-        +getRequestStatus() : req_stat
-        +getHeaderInfos() : t_HInfos
-        +print()
-    }
-
     class HTTPMethods {
-        <<Abstract>>
-        +~HTTPMethods()
-        +~execute()~*
+        <<abstract>>
+        +execute()*
     }
 
     class GETMethod {
@@ -66,55 +20,102 @@ classDiagram
         +execute()
     }
 
-    class RequestLineParser {
-        -bool isValidRequestLine(const string& header)
-        -parseLine(const string& str)
-        +parse(istringstream& stream)
+    class RequestParser {
+        <<abstract>>
+        -RequestLine requestLine
+        -map headers
+        -string body
+        -vector metaData
+        -bool isDone
+        +parse(istringstream&)*
+        +print()*
+        +getRequestLine()
+        +getHeaders()
+        +getBody()
+        +getStatus()
+    }
+
+    class RequestBuilder {
+        -string rawRequest
+        -RequestParser* requestParser[3]
+        -RequestStatus status
+        -HeaderInfo headerInfo
+        -bool isHeaderDone
+        -bool isSettingDone
+        +build(string)
         +print()
+        +parseRequestHeader(string)
+        +parseRequestBody(string)
+        +getRequestStatus()
+        +getHeaderInfos()
+        +setBoundary()
     }
 
     class HeaderParser {
-        -bool isValidHeader(const string& header)
-        -parseLine(const string& str)
-        -bool isDoubleCRLF(istream& stream, const string& line)
-        -lowerString(string& str)
-        +parse(istringstream& stream)
+        -isValidHeader(string)
+        -parseLine(string)
+        -isDoubleCRLF(istream, string)
+        +parse(istringstream&)
         +print()
     }
 
     class BodyParser {
-        -bool isChuncked
-        +parse(istringstream& stream)
-        +parseChunckedBody(istringstream& stream, t_HInfos& header_info)
+        -BodyStatus bodyStatus
+        -HeaderInfo headerInfo
+        -RequestStatus status
+        -ChunkInfo chunkInfo
+        -LengthInfo lengthInfo
+        -ofstream outfile
+        -BoundaryParser* boundaryParser
+        -ChunkParser* chunkParser
+        -generateRandomName(string)
+        -getAttr(string)
+        -parse(istringstream)
+        -setHeaderInfo(HeaderInfo)
+        -setStatus(RequestStatus)
+        -print()
+    }
+
+    class BoundaryParser {
+        -parseFilenameBody()
+        -parseNameAttr(size_t)
+        -parseFilenameAttr(size_t, size_t)
+        -parseNameBody()
+        -parseBoundaries(istringstream)
+        -parseBinary(istringstream)
+        +parse(istringstream)
+    }
+
+    class ChunkParser {
+        -isEndBoundary()
+        -parseInnerBoundary(string)
+        -pushChunk()
+        -parseHeadBody()
+        -parseBodyLength()
+        -parseBodyChunk()
+        -parseChunkedBoundaries(istringstream)
+        -parseChunked(istringstream)
+        +parse(istringstream)
+    }
+
+    class RequestLineParser {
+        -isValidRequestLine(string)
+        -parseLine(string)
+        +parse(istringstream&)
         +print()
     }
 
-    class t_HInfos {
-        +string content_type
-        +string content_length
-    }
-
-    class req_stat {
-        <<Enum>>
-        CHUNKED
-        CHUNCK_BOUND
-        BOUNDARIES
-        CONTENT_LENGTH
-        NONE
-    }
-
-    RequestParser <|-- RequestLineParser
-    RequestParser <|-- HeaderParser
-    RequestParser <|-- BodyParser
     HTTPMethods <|-- GETMethod
     HTTPMethods <|-- POSTMethod
     HTTPMethods <|-- DELETEMethod
-    Request *-- RequestLineParser
-    Request *-- HeaderParser
-    Request *-- BodyParser
-    RequestBuilder *-- Request
-    RequestBuilder *-- req_stat
-    RequestBuilder *-- t_HInfos
-    BodyParser *-- t_HInfos
+
+    RequestParser <|-- HeaderParser
+    RequestParser <|-- BodyParser
+    RequestParser <|-- RequestLineParser
+
+    BodyParser <|-- BoundaryParser
+    BodyParser <|-- ChunkParser
+
+    RequestBuilder *-- RequestParser
 
 ```

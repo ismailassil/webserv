@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 15:36:29 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/22 06:59:15 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 15:58:06 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../bits/RequestBuilder.hpp"
+#include "../headers/RequestBuilder.hpp"
 #include <cstddef>
 #include <exception>
 #include <iostream>
@@ -72,8 +72,8 @@ int main() {
 		while ((bytes_received = recv(new_socket, buffer, sizeof(buffer), 0)) > 0) {
 			std::string buf(buffer, bytes_received);
 
-			std::ofstream ss("request.py", std::ios::app | std::ios::binary);
-			std::ofstream sss("chunks.py", std::ios::app | std::ios::binary);
+			std::ofstream ss("request.py", ios::app | ios::binary);
+			std::ofstream sss("chunks.py", ios::app | ios::binary);
 			ss.write(buf.c_str(), buf.length());
 
 			sss << "\n=================== Step: [" << step << "] ========================================\n";

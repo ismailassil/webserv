@@ -78,15 +78,14 @@ struct RequestLine {
 	string	httpVersion;
 };
 
-struct TaskStatus {
+struct BodyStatus {
 	bool	perm;
 	bool	initDone;
-	bool	bodyDone;
-	bool	headDone;
-	bool	headLength;
+	bool	isheadDone;
+	bool	isheadLength;
 	bool	isbodySize;
-	bool	isUp;
-	bool	isNa;
+	bool	isFile;
+	bool	isText;
 };
 
 struct HeaderInfo {
@@ -103,4 +102,23 @@ enum RequestStatus {
 	CONTENT_LENGTH,
 	NO_CONTENT_LENGTH,
 	NONE
+};
+
+enum ParserIndex {
+    REQUEST_LINE = 0,
+    HEADER = 1,
+    BODY = 2
+};
+
+struct ChunkInfo {
+	string	requestChunk;
+	string	name;
+	string	filename;
+	string	Chunk;
+	string	BodyChunk;
+};
+
+struct LengthInfo {
+	size_t	bodyLength;
+	size_t	chunkLength;
 };

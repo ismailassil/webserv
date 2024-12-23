@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:07:39 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/20 15:44:45 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 00:48:31 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ class RequestParser {
 		RequestLine						requestLine;
 		map<string, string>				headers;
 		string							body;
-		vector<pair<string, string> >	metaData;
+		vector< pair<string, string> >	metaData;
 		bool							isDone;
 
 	public:
@@ -32,4 +32,7 @@ class RequestParser {
 		const map<string, string>&	getHeaders() const;
 		const string&				getBody() const;
 		const bool&					getStatus() const;
+
+		virtual void	setHeaderInfo( HeaderInfo& ) { }
+		virtual void	setStatus( RequestStatus& ) { }
 };

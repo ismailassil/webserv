@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:38:45 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/22 01:46:52 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 13:12:56 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../bits/parse/HeaderParser.hpp"
+#include "../../headers/parse/HeaderParser.hpp"
 
 bool	HeaderParser::isValidHeader( const string& line ) {
     std::regex regexHeader("^([A-Za-z0-9\\-]+):([ \t]*)([^\\r\\n]+)\\r$");

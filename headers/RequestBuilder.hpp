@@ -6,23 +6,25 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:05:53 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/19 19:28:13 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 13:57:04 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "parse/BodyParser.hpp"
-#include "parse/HeaderParser.hpp"
-#include "parse/RequestLineParser.hpp"
+#include "RequestParser.hpp"
+#include "parse/BodyParser.hpp" // IWYU pragma: keep
+#include "parse/HeaderParser.hpp" // IWYU pragma: keep
+#include "parse/RequestLineParser.hpp" // IWYU pragma: keep
 #include "bits.hpp"
+
+class	BodyParser;
+class	ChunkParser;
+class	BoundaryParser;
 
 class RequestBuilder {
 	private:
 		string				rawRequest;
-		
-		RequestLineParser*	requestLineParser;
-		HeaderParser*		headerParser;
-		BodyParser*			bodyParser;
+		RequestParser*		requestParser[3];
 		
 		RequestStatus		status;
 		HeaderInfo			headerInfo;
@@ -31,6 +33,7 @@ class RequestBuilder {
 
 	public:
 		RequestBuilder();
+		~RequestBuilder();
 
 		void	build( const string& );
 		void	print() const;

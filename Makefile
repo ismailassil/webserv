@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/22 21:58:16 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/23 14:43:49 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,9 +15,9 @@ CPP				+=	-Wall -Wextra -Werror -std=c++98
 CPP				+=	-fsanitize=address -g
 RM				=	rm -f
 NAME			=	webserv
-HEADER			=	bits/HTTPMethods.hpp		bits/RequestBuilder.hpp			bits/RequestParser.hpp		\
-					bits/bits.hpp
-PARSE_HEADER	=	bits/parse/BodyParser.hpp	bits/parse/HeaderParser.hpp		bits/parse/RequestLineParser.hpp
+HEADER			=	headers/HTTPMethods.hpp		headers/RequestBuilder.hpp			headers/RequestParser.hpp		\
+					headers/bits.hpp
+PARSE_HEADER	=	headers/parse/BodyParser.hpp	headers/parse/HeaderParser.hpp		headers/parse/RequestLineParser.hpp
 
 FLD_NAME		=	._object_files
 
@@ -25,18 +25,21 @@ FLD_NAME		=	._object_files
 SRC_FILES	=	main.cpp
 RQS_FILES	=	RequestParser.cpp	RequestBuilder.cpp
 PRS_FILES	=	HeaderParser.cpp	RequestLineParser.cpp	BodyParser.cpp
+BDY_FILES	=	BoundaryParser.cpp	ChunkParser.cpp
 
 ##########################################################################################
 
 SRC_SRC		=	$(addprefix srcs/,$(SRC_FILES))
 RQS_SRC		=	$(addprefix request/,$(RQS_FILES))
 PRS_SRC		=	$(addprefix request/parse/,$(PRS_FILES))
+BDY_SRC		=	$(addprefix request/parse/parseBody/,$(BDY_FILES))
 
 SRC_OBJ		=	$(addprefix $(FLD_NAME)/,$(SRC_SRC:.cpp=.o))
 RQS_OBJ		=	$(addprefix $(FLD_NAME)/,$(RQS_SRC:.cpp=.o))
 PRS_OBJ		=	$(addprefix $(FLD_NAME)/,$(PRS_SRC:.cpp=.o))
+BDY_OBJ		=	$(addprefix $(FLD_NAME)/,$(BDY_SRC:.cpp=.o))
 
-OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ)
+OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ) $(BDY_OBJ)
 
 ########### Goal Target
 all: files $(NAME)
@@ -53,6 +56,10 @@ $(FLD_NAME)/request/%.o: ./request/%.cpp $(HEADER)
 	@$(CPP) -c $< -o $@
 
 $(FLD_NAME)/request/parse/%.o: ./request/parse/%.cpp $(PARSE_HEADER)
+	@mkdir -p $(dir $@)
+	@$(CPP) -c $< -o $@
+
+$(FLD_NAME)/request/parse/parseBody/%.o: ./request/parse/parseBody/%.cpp $(PARSE_HEADER)
 	@mkdir -p $(dir $@)
 	@$(CPP) -c $< -o $@
 
