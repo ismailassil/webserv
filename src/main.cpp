@@ -1,8 +1,9 @@
-#include "Config.hpp"
+#include "ConfigParser.hpp"
 
 int main()
 {
-    Config config;
-    config.parseConfigFile("server.conf");
+    ConfigParser ConfigParser;
+    ConfigParser.parseConfigFile("server.conf");
+    ConfigParser.displayData();
     return 0;
 }

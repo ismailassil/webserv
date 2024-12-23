@@ -1,20 +1,17 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <map>
-#include <algorithm>
-
 #include "Location.hpp"
 
 class Server {
-	private:
+	// private:
+	public:
 		int							listen;
 		std::vector<std::string>	server_names;
 		std::map<int, std::string>	error_pages;
 		int							client_max_body_size;
 		std::vector<Location>		locations;
 	public:
+		Server();
 		void	setDirectives(std::map<std::string, std::vector<std::string> > directives);
 		void	setListen(std::vector<std::string> values);
 		void	setBodySize(std::vector<std::string> values);

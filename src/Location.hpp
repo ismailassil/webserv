@@ -1,21 +1,26 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <vector>
 #include <map>
-#include <algorithm>
+#include <stack>
 #include <set>
+#include <algorithm>
+#include <stdlib.h>
 
 class Location {
-	private:
+	// private:
+	public:
 		std::string					path;
 		std::string					root;
 		std::string					index;
-		std::set<std::string>		methods;
-		std::string					cgi;
 		bool						autoindex;
+		std::string					cgi;
 		std::string					upload_path;
 		std::string					redirect;
+		std::set<std::string>		methods;
 	public:
 		Location();
 		Location(std::string locationPath);
