@@ -6,27 +6,27 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:07:16 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 14:12:02 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 18:51:18 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "../BodyParser.hpp" // IWYU pragma: keep
 #include "../../bits.hpp"
+#include "../BodyParser.hpp"  // IWYU pragma: keep
 
 class ChunkParser : public BodyParser {
 	private:
-		bool	isEndBoundary( void );
-		void	parseInnerBoundary( const string& body );
-		void	pushChunk( void );
-		bool	parseHeadBody( void );
-		bool	parseBodyLength( void );
-		void	parseBodyChunk( void );
-		void	parseChunkedBoundaries( const istringstream& stream );
-		void	parseChunked( const istringstream& stream );
+		bool isEndBoundary( void );
+		void parseInnerBoundary( const string& body );
+		void pushChunk( void );
+		bool parseHeadBody( void );
+		bool parseBodyLength( void );
+		void parseBodyChunk( void );
+		void parseChunkedBoundaries( const istringstream& stream );
+		void parseChunked( const istringstream& stream );
 
 	public:
 		ChunkParser() : BodyParser() {}
-		
-		void	parse( istringstream& );
+
+		void parse( istringstream& );
 };
