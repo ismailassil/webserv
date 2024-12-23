@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 20:11:37 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/20 15:35:54 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 18:36:56 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 class HTTPMethods {
 	public:
 		virtual ~HTTPMethods() {}
-		virtual void	execute() = 0;
+		virtual void execute() = 0;
 };
 
 class GETMethod : public HTTPMethods {

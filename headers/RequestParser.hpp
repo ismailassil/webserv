@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:07:39 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 00:48:31 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/23 18:37:02 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,24 @@
 
 class RequestParser {
 	protected:
-		RequestLine						requestLine;
-		map<string, string>				headers;
-		string							body;
-		vector< pair<string, string> >	metaData;
-		bool							isDone;
+		RequestLine						 requestLine;
+		map< string, string >			 headers;
+		string							 body;
+		vector< pair< string, string > > metaData;
+		bool							 isDone;
 
 	public:
 		RequestParser();
 		virtual ~RequestParser() {}
 
-		virtual void	parse( istringstream& ) = 0;
-		virtual void	print() const = 0;
+		virtual void parse( istringstream& ) = 0;
+		virtual void print() const			 = 0;
 
-		const RequestLine&			getRequestLine() const;
-		const map<string, string>&	getHeaders() const;
-		const string&				getBody() const;
-		const bool&					getStatus() const;
+		const RequestLine&			 getRequestLine() const;
+		const map< string, string >& getHeaders() const;
+		const string&				 getBody() const;
+		const bool&					 getStatus() const;
 
-		virtual void	setHeaderInfo( HeaderInfo& ) { }
-		virtual void	setStatus( RequestStatus& ) { }
+		virtual void setHeaderInfo( HeaderInfo& ) {}
+		virtual void setStatus( RequestStatus& ) {}
 };
