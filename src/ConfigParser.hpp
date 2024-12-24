@@ -13,5 +13,6 @@ class ConfigParser {
         int     extractLocationContext(const std::vector<std::string>& tokens, int startIndex, Location& location);
         int     extractServerContext(const std::vector<std::string>& tokens, int startIndex, Server& server);
         bool    isValidPath(const std::string& path);
+        void    checkConfigValidity();
         void    displayData();
 };

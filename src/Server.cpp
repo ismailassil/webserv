@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server() : listen(80), client_max_body_size(-1)
+Server::Server() : listen(-1), client_max_body_size(-1)
 {
     server_names.clear();
     error_pages.clear();

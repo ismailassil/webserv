@@ -8,27 +8,31 @@ void ConfigParser::tokenize(const std::string& configContent, std::vector<std::s
     for (size_t i = 0; i < configContent.size(); i++)
     {
         char c = configContent[i];
-        if (c == '{' || c == '}' || c == ';')
+        if (c == '#')
+        {
+            while (i < configContent.size() && configContent[i] != '\n')
+                i++;
+        }
+        else if (c == '{' || c == '}' || c == ';')
         {
             if (!currentToken.empty()) {
                 tokens.push_back(currentToken);
                 currentToken.clear();
             }
             tokens.push_back(std::string(1, c));
+            if (c == ';')
+                while (i < configContent.size() && configContent[i] == ';')
+                    i++;
         }
-        else if (isspace(c))
+        else if (isspace(c) || c == '\n')
         {
             if (!currentToken.empty())
             {
                 tokens.push_back(currentToken);
                 currentToken.clear();
             }
-        }
-        else if (c == '#')
-        {
-            while (i < configContent.size() && configContent[i] != '\n') {
-                i++;
-            }
+            // while (i < configContent.size() && isspace(configContent[i]))
+            //     i++;
         }
         else
             currentToken += c;
@@ -36,22 +40,6 @@ void ConfigParser::tokenize(const std::string& configContent, std::vector<std::s
     if (!currentToken.empty()) {
         tokens.push_back(currentToken);
     }
-}
-
-void ConfigParser::parseConfigFile(const std::string &filePath)
-{
-    std::ifstream file(filePath.c_str());
-    std::string line;
-    std::string fileContent;
-    std::vector<std::string> tokens;
-
-    if (!file.is_open())
-        // throw std::runtime_error("Error: Can't Open Configuration File");
-        {printf("Error\n"); exit(1);}
-    while (std::getline(file, line))
-        fileContent += line;
-    tokenize(fileContent, tokens);
-    parseTokens(tokens);
 }
 
 bool ConfigParser::isValidPath(const std::string& path)
@@ -85,12 +73,13 @@ int ConfigParser::extractLocationContext(const std::vector<std::string>& tokens,
             if (i + 1 < tokens.size())
             {
                 i++;
+                size_t j = i;
                 while (i < tokens.size() && tokens[i] != ";" && tokens[i] != "{" && tokens[i] != "}")
                 {
                     directives[key].push_back(tokens[i]);
                     i++;
                 }
-                if (i >= tokens.size() || tokens[i] != ";")
+                if (j == i || i >= tokens.size() || tokens[i] != ";")
                     // throw std::runtime_error("Error: Missing ';' after values for key '" + key + "'");
                     {printf("Error\n"); exit(1);}
             }
@@ -138,12 +127,13 @@ int ConfigParser::extractServerContext(const std::vector<std::string>& tokens, i
             if (i + 1 < tokens.size())
             {
                 i++;
+                size_t j = i;
                 while (i < tokens.size() && tokens[i] != ";" && tokens[i] != "{" && tokens[i] != "}")
                 {
                     directives[key].push_back(tokens[i]);
                     i++;
                 }
-                if (i >= tokens.size() || tokens[i] != ";")
+                if (j == i || i >= tokens.size() || tokens[i] != ";")
                     // throw std::runtime_error("Error: Missing ';' after values for key '" + key + "'");
                     {printf("Error\n"); exit(1);}
             }
@@ -186,7 +176,26 @@ void ConfigParser::parseTokens(const std::vector<std::string>& tokens)
         {printf("Error\n"); exit(1);}
 }
 
-#include <iostream>
+void ConfigParser::checkConfigValidity()
+{
+    for (std::vector<Server>::iterator serverIt = servers.begin(); serverIt != servers.end(); ++serverIt)
+    {
+        if (serverIt->listen == -1)
+            // throw std::runtime_error("Error: 'listen' directive missing in 'server' context");
+            {printf("Error\n"); exit(1);}
+       if (serverIt->locations.empty())
+            // throw std::runtime_error("Error: No 'location' context found in the configuration.");
+            {printf("Error\n"); exit(1);}
+        std::set<std::string> locationPaths;
+        for (std::vector<Location>::iterator locIt = serverIt->locations.begin(); locIt != serverIt->locations.end(); ++locIt)
+        {
+            if (locationPaths.find(locIt->path) != locationPaths.end())
+                // throw std::runtime_error("Error: Duplicate 'location' context found for path: " + locIt->path);
+                {printf("Error\n"); exit(1);}
+            locationPaths.insert(locIt->path);
+        }
+    }
+}
 
 void ConfigParser::displayData() {
     int serverCount = 1;
@@ -234,4 +243,27 @@ void ConfigParser::displayData() {
         }
         std::cout << "\n";
     }
+}
+
+
+void ConfigParser::parseConfigFile(const std::string &filePath)
+{
+    std::ifstream file(filePath.c_str());
+    if (!file.is_open())
+        // throw std::runtime_error("Error: Can't Open Configuration File");
+        {printf("Error\n"); exit(1);}
+    std::string line;
+    std::string fileContent;
+    std::vector<std::string> tokens;
+
+    while (std::getline(file, line))
+    {
+        fileContent += line;
+        if (!file.eof())
+            fileContent += '\n';
+    }
+    tokenize(fileContent, tokens);
+    parseTokens(tokens);
+    checkConfigValidity();
+    displayData();
 }

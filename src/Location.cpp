@@ -5,7 +5,6 @@ Location::Location(): path(""), root(""), index(""), autoindex(false), cgi(""), 
     methods.clear();
 }
 
-
 Location::Location(std::string locationPath)
 {
     path = locationPath;
