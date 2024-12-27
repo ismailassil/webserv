@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:04:10 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 15:17:10 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 19:31:41 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,9 @@ void BoundaryParser::parseNameBody( void ) {
 		metaData.push_back( make_pair( chunkInfo.name, chunkInfo.Chunk ) );
 		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
 						   ios::app | ios::binary );  // to be removed
-		nOutfile << chunkInfo.Chunk;				  // to be removed
-		nOutfile.close();							  // to be removed
+		nOutfile.write( chunkInfo.Chunk.c_str(),
+						chunkInfo.Chunk.length() );	 // to be removed
+		nOutfile.close();							 // to be removed
 		chunkInfo.Chunk.clear();
 
 		bodyStatus.initDone = false;
@@ -69,8 +70,9 @@ void BoundaryParser::parseNameBody( void ) {
 		metaData.push_back( make_pair( chunkInfo.name, chunkInfo.Chunk ) );
 		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
 						   ios::app | ios::binary );  // to be removed
-		nOutfile << chunkInfo.Chunk;				  // to be removed
-		nOutfile.close();							  // to be removed
+		nOutfile.write( chunkInfo.Chunk.c_str(),
+						chunkInfo.Chunk.length() );	 // to be removed
+		nOutfile.close();							 // to be removed
 		chunkInfo.Chunk.clear();
 		chunkInfo.requestChunk.clear();
 	}

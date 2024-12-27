@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:21 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 15:27:29 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 19:30:55 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,8 +72,9 @@ void ChunkParser::pushChunk( void ) {
 	} else if ( bodyStatus.isText ) {
 		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
 						   ios::app | ios::binary );  // to be removed
-		nOutfile << chunkInfo.Chunk;				  // to be removed
-		nOutfile.close();							  // to be removed
+		nOutfile.write( chunkInfo.Chunk.c_str(),
+						chunkInfo.Chunk.length() );	 // to be removed
+		nOutfile.close();							 // to be removed
 		metaData.push_back( make_pair( chunkInfo.name, chunkInfo.Chunk ) ),
 			chunkInfo.Chunk.clear();
 		bodyStatus.isText = false;
@@ -96,7 +97,8 @@ bool ChunkParser::parseHeadBody( void ) {
 		lengthInfo.chunkLength > chunkInfo.requestChunk.length()
 			? chunkInfo.requestChunk.length()
 			: lengthInfo.chunkLength;
-	chunkInfo.BodyChunk += chunkInfo.requestChunk.substr( 0, currentLength );
+	chunkInfo.BodyChunk.append(
+		chunkInfo.requestChunk.substr( 0, currentLength ) );
 	lengthInfo.chunkLength -= currentLength;
 	bodyStatus.isheadLength = !lengthInfo.chunkLength;
 	if ( lengthInfo.chunkLength == 0 ) {
@@ -151,7 +153,8 @@ void ChunkParser::parseBodyChunk( void ) {
 			? chunkInfo.requestChunk.length()
 			: lengthInfo.chunkLength;
 	lengthInfo.chunkLength -= currentLength;
-	chunkInfo.BodyChunk += chunkInfo.requestChunk.substr( 0, currentLength );
+	chunkInfo.BodyChunk.append(
+		chunkInfo.requestChunk.substr( 0, currentLength ) );
 	if ( lengthInfo.chunkLength == 0 ) {
 		bodyStatus.isbodySize = false;
 		if ( bodyStatus.isFile ) {
@@ -159,7 +162,7 @@ void ChunkParser::parseBodyChunk( void ) {
 						   chunkInfo.BodyChunk.length() );
 			outfile.flush();
 		} else if ( bodyStatus.isText ) {
-			chunkInfo.Chunk += chunkInfo.BodyChunk;
+			chunkInfo.Chunk.append( chunkInfo.BodyChunk );
 		}
 		chunkInfo.BodyChunk.clear();
 		currentLength += 2;
@@ -168,9 +171,7 @@ void ChunkParser::parseBodyChunk( void ) {
 }
 
 void ChunkParser::parseChunkedBoundaries( const istringstream& stream ) {
-	chunkInfo.requestChunk += stream.str();
-
-	step++;
+	chunkInfo.requestChunk.append( stream.str() );
 
 	while ( !chunkInfo.requestChunk.empty() ) {
 		if ( !bodyStatus.isheadDone ) {
