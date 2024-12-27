@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:04:10 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 19:31:41 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 20:57:39 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,9 +116,11 @@ void BoundaryParser::parseBoundaries( const istringstream& stream ) {
 
 	while ( !chunkInfo.requestChunk.empty() ) {
 		if ( !bodyStatus.initDone ) {
+			if ( chunkInfo.requestChunk.find( DCRNL ) == string::npos ) return;
 			size_t bd_pos = chunkInfo.requestChunk.find( headerInfo.boundary );
-			if ( bd_pos == string::npos ) throw "BOUNDARY NOT FOUND";
-
+			if ( bd_pos == string::npos ) {
+				throw "BOUNDARY NOT FOUND";
+			}
 			size_t fl_pos = chunkInfo.requestChunk.find( FILENAME );
 			size_t npos	  = chunkInfo.requestChunk.find( NAME );
 			size_t crpos  = chunkInfo.requestChunk.find( DCRNL, npos );
@@ -131,8 +133,9 @@ void BoundaryParser::parseBoundaries( const istringstream& stream ) {
 				parseNameAttr( npos );
 				bodyStatus.initDone = true;
 				bodyStatus.isText	= true;
-			} else
+			} else {
 				throw BAD_REQUEST;
+			}
 		}
 		if ( bodyStatus.initDone ) {
 			if ( bodyStatus.isFile )

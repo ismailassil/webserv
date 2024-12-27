@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:21 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 19:30:55 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 20:54:40 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,9 +84,10 @@ void ChunkParser::pushChunk( void ) {
 bool ChunkParser::parseHeadBody( void ) {
 	if ( !bodyStatus.isheadLength ) {
 		size_t pos = chunkInfo.requestChunk.find( CRNL );
-		if ( pos == string::npos )
+		if ( pos == string::npos ) {
+			// return true;
 			throw runtime_error( "CRNL NOT FOUND - HEAD" );
-
+		}
 		const string& number = chunkInfo.requestChunk.substr( 0, pos );
 		char*		  end;
 		lengthInfo.chunkLength =
