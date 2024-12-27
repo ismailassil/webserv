@@ -14,6 +14,7 @@
 #include <algorithm>  // IWYU pragma: keep
 #include <cstddef>	  // IWYU pragma: keep
 #include <cstring>	  // IWYU pragma: keep
+#include <exception>
 #include <fstream>	  // IWYU pragma: keep
 #include <ios>		  // IWYU pragma: keep
 #include <iostream>	  // IWYU pragma: keep
@@ -66,6 +67,7 @@ using std::runtime_error;
 using std::string;
 using std::strtol;
 using std::vector;
+using std::exception;
 
 struct RequestLine {
 		string method;

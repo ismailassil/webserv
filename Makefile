@@ -6,7 +6,7 @@
 #    By: iassil <iassil@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/04 21:44:18 by iassil            #+#    #+#              #
-#    Updated: 2024/12/23 14:43:49 by iassil           ###   ########.fr        #
+#    Updated: 2024/12/27 15:16:04 by iassil           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,7 +70,8 @@ $(NAME): $(OBJ)
 	@echo "$(GREEN)[ ✓ ] Executable file Compiled Successfully!$(RESET)"
 
 files:
-	@$(RM) *.py _downloads/*
+	@$(RM) *.py ~/goinfre/_downloads/*
+	@mkdir -p ~/goinfre/_downloads/
 
 clean: files
 	@echo "$(YELLOW)[ ~ ] Removing Object files $(RESET)"
@@ -117,9 +118,9 @@ art:
 	@echo ""
 
 ########## Define ANSI escape codes for colors
-GREEN			=	\033[1;32m
-YELLOW			=	\033[33m
+GREEN			:=	\033[1;32m
+YELLOW			:=	\033[33m
 LIGHT_RED		:=	\033[91m
 RED				:=	\033[31m
 DARK_RED		:=	\033[2;31m
-RESET			=	\033[0m
+RESET			:=	\033[0m

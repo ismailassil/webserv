@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:21 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 18:37:08 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 15:27:29 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void ChunkParser::parseInnerBoundary( const string& body ) {
 		string contentStringName = body.substr( namePos, cpos - namePos );
 		chunkInfo.filename		 = getAttr( contentString );
 		chunkInfo.name			 = getAttr( contentStringName );
-		outfile.open( "_downloads/" + chunkInfo.filename,
+		outfile.open( "/Users/iassil/goinfre/_downloads/" + chunkInfo.filename,
 					  ios::app | ios::binary );	 // to be removed
 		if ( !outfile.is_open() )
 			throw runtime_error( "-- failed to open - " + chunkInfo.filename +
@@ -70,7 +70,7 @@ void ChunkParser::pushChunk( void ) {
 		outfile.close();
 		bodyStatus.isFile = false;
 	} else if ( bodyStatus.isText ) {
-		ofstream nOutfile( "_downloads/" + chunkInfo.name,
+		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
 						   ios::app | ios::binary );  // to be removed
 		nOutfile << chunkInfo.Chunk;				  // to be removed
 		nOutfile.close();							  // to be removed
@@ -112,10 +112,17 @@ bool ChunkParser::parseHeadBody( void ) {
 }
 
 bool ChunkParser::parseBodyLength( void ) {
+	size_t i = 0;
+	while ( i < chunkInfo.requestChunk.length() &&
+			( chunkInfo.requestChunk[i] == '\n' ||
+			  chunkInfo.requestChunk[i] == '\r' ) )
+		i++;
+	chunkInfo.requestChunk.erase( 0, i );
 	size_t pos = chunkInfo.requestChunk.find( CRNL );
 	if ( pos == string::npos ) {
-		const string& number = chunkInfo.requestChunk.substr( 0, pos );
-		char*		  end;
+		const string& number = chunkInfo.requestChunk.substr(
+			0, chunkInfo.requestChunk.length() - 1 );
+		char* end;
 		lengthInfo.chunkLength =
 			static_cast< size_t >( strtol( number.c_str(), &end, 16 ) );
 		if ( *end == '\0' ) return true;
@@ -163,6 +170,8 @@ void ChunkParser::parseBodyChunk( void ) {
 void ChunkParser::parseChunkedBoundaries( const istringstream& stream ) {
 	chunkInfo.requestChunk += stream.str();
 
+	step++;
+
 	while ( !chunkInfo.requestChunk.empty() ) {
 		if ( !bodyStatus.isheadDone ) {
 			if ( parseHeadBody() ) return;
@@ -190,8 +199,15 @@ void ChunkParser::parseChunked( const istringstream& stream ) {
 		} else if ( bodyStatus.initDone ) {
 			if ( !bodyStatus.perm ) {
 				size_t pos = chunkInfo.requestChunk.find( CRNL );
-				if ( pos == string::npos )
+				if ( pos == string::npos ) {
+					const string& number = chunkInfo.requestChunk.substr(
+						0, chunkInfo.requestChunk.length() - 1 );
+					char* end;
+					lengthInfo.chunkLength = static_cast< size_t >(
+						strtol( number.c_str(), &end, 16 ) );
+					if ( *end == '\0' ) return;
 					throw runtime_error( "CRNL not found - Chunk Length" );
+				}
 				char* end;
 				lengthInfo.chunkLength = static_cast< size_t >(
 					strtol( chunkInfo.requestChunk.substr( 0, pos ).c_str(),

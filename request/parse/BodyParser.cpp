@@ -6,13 +6,14 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 18:37:11 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 15:55:55 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../headers/parse/BodyParser.hpp"
 
 BodyParser::BodyParser() : RequestParser() {
+	bodyParser				= NULL;
 	bodyStatus.perm			= false;
 	bodyStatus.initDone		= false;
 	bodyStatus.isheadDone	= false;
@@ -22,9 +23,11 @@ BodyParser::BodyParser() : RequestParser() {
 	bodyStatus.isText		= false;
 	lengthInfo.bodyLength	= 0;
 }
-
 BodyParser::~BodyParser() {
-	if ( bodyParser ) delete bodyParser;
+	if ( bodyParser ) {
+		delete bodyParser;
+		bodyParser = NULL;
+	}
 }
 
 void BodyParser::parse( istringstream& stream ) {
@@ -34,6 +37,8 @@ void BodyParser::parse( istringstream& stream ) {
 		else if ( status == BOUNDARIES || status == CONTENT_LENGTH ||
 				  status == NO_CONTENT_LENGTH )
 			bodyParser = new BoundaryParser();
+		else
+			throw "PARSE NOT FOUND";
 		bodyParser->setStatus( status );
 		bodyParser->setHeaderInfo( headerInfo );
 		isDone = true;
@@ -45,7 +50,7 @@ const string BodyParser::generateRandomName( const string& contentType ) {
 	int				   num = rand() % 100 + 1;
 	std::ostringstream oss;
 	oss << num;
-	return "_downloads/tmp" + oss.str() + contentType;
+	return "/Users/iassil/goinfre/_downloads/tmp" + oss.str() + contentType;
 }
 
 const string BodyParser::getAttr( string& requestBody ) {
@@ -59,13 +64,11 @@ const string BodyParser::getAttr( string& requestBody ) {
 }
 
 void BodyParser::print() const {
-	cout << "============================" << endl;
 	for ( vector< pair< string, string > >::const_iterator it =
 			  metaData.begin();
 		  it != metaData.end(); it++ ) {
 		cout << it->first << ": " << it->second << endl;
 	}
-	cout << "============================" << endl;
 }
 
 void BodyParser::setHeaderInfo( HeaderInfo& headerInfo ) {

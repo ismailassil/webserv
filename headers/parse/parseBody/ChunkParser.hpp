@@ -6,13 +6,15 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:07:16 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 18:51:18 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/25 16:32:52 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "../../bits.hpp"
 #include "../BodyParser.hpp"  // IWYU pragma: keep
+
+static int step;
 
 class ChunkParser : public BodyParser {
 	private:
@@ -27,6 +29,7 @@ class ChunkParser : public BodyParser {
 
 	public:
 		ChunkParser() : BodyParser() {}
+		~ChunkParser() {}
 
 		void parse( istringstream& );
 };

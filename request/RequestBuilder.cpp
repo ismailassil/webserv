@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:09:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 18:37:19 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/27 15:54:39 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,16 +47,16 @@ void RequestBuilder::getRequestStatus() {
 
 	if ( it_tr != requestHeader.end() ) {
 		if ( it_tr->second.find( "chunked" ) != string::npos &&
-			 it_ct != requestHeader.end() ) {
-			if ( ( boundary_start = it_ct->second.find( "boundary" ) ) !=
+			 it_ct != requestHeader.end() &&
+			 it_ct->second.find( "boundary" ) != string::npos &&
+			 ( boundary_start = it_ct->second.find( "boundary" ) ) !=
 				 string::npos ) {
-				boundary_start += 9;
-				boundary_end = it_ct->second.find( "\r" );
-				setBoundary( it_ct, boundary_start, boundary_end );
-				status = CHUNK_BOUND;
-			} else
-				status = CHUNKED;
-		}
+			boundary_start += 9;
+			boundary_end = it_ct->second.find( "\r" );
+			setBoundary( it_ct, boundary_start, boundary_end );
+			status = CHUNK_BOUND;
+		} else if ( it_ct != requestHeader.end() )
+			status = CHUNKED;
 		return;
 	} else if ( it_ct != requestHeader.end() &&
 				( boundary_start = it_ct->second.find( "boundary" ) ) !=
@@ -126,19 +126,21 @@ void RequestBuilder::build( const string& incomingRequest ) {
 			isHeaderDone = true;
 		}
 	}
-	if ( isHeaderDone && !rawRequest.empty() ) {
+	if ( requestParser[REQUEST_LINE]->getRequestLine().method == POST &&
+		 isHeaderDone && !rawRequest.empty() ) {
 		parseRequestBody( rawRequest );
 		rawRequest.clear();
 	}
 }
 
 void RequestBuilder::print() const {
-	cout << GREEN "============REQUEST LINE============" << RESET << endl;
+	cout << GREEN "============REQUEST_LINE============" << RESET << endl;
 	requestParser[REQUEST_LINE]->print();
-	cout << GREEN "===========REQUEST HEADER===========" << RESET << endl;
+	cout << GREEN "===========REQUEST_HEADER===========" << RESET << endl;
 	requestParser[HEADER]->print();
-	cout << GREEN "===============BODY=================" << RESET << endl;
+	cout << GREEN "================BODY================" << RESET << endl;
 	requestParser[BODY]->print();
+	cout << GREEN "====================================" << RESET << endl;
 }
 
 RequestBuilder::RequestBuilder() {
@@ -152,6 +154,9 @@ RequestBuilder::RequestBuilder() {
 
 RequestBuilder::~RequestBuilder() {
 	for ( int i = 0; i < 3; i++ ) {
-		delete requestParser[i];
+		if ( requestParser[i] ) {
+			delete requestParser[i];
+			requestParser[i] = NULL;
+		}
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 18:36:38 by iassil           ###   ########.fr       */
+/*   Updated: 2024/12/25 12:29:35 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,6 @@ class RequestLineParser : public RequestParser {
 	public:
 		RequestLineParser() : RequestParser() {}
 
-		void parse( istringstream& );
-		void print() const;
+		void		 parse( istringstream& );;
+		void		 print() const;
 };
