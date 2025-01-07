@@ -9,6 +9,10 @@
 #include <set>
 #include <algorithm>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <cstdlib>
+#include <unistd.h>
 
 class Location {
 	// private:
