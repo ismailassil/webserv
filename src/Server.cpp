@@ -99,7 +99,6 @@ void Server::setErrorPages(const std::vector<std::string> values)
     }
 }
 
-
 void    Server::addLocation(Location location)
 {
     locations.push_back(location);
@@ -121,4 +120,29 @@ void	Server::setDirectives(std::map<std::string, std::vector<std::string> > dire
             // throw std::runtime_error("Error: Invalid token '" + iter->first + "' in Server");
             {printf("Error\n"); exit(1);}
     }
+}
+
+int	Server::getListen() const
+{
+    return listen;
+}
+
+std::vector<std::string>	Server::getServerNames() const
+{
+    return server_names;
+}
+
+std::map<int, std::string>	Server::getErrorPages() const
+{
+    return error_pages;
+}
+
+int	Server::getClientMaxBodySize() const
+{
+    return client_max_body_size;
+}
+
+std::vector<Location>	Server::getLocations() const
+{
+    return locations;
 }

@@ -1,10 +1,11 @@
-#include "ConfigParser.hpp"
+#include "WebServer.hpp"
 
 int main()
 {
-    ConfigParser ConfigParser;
-    ConfigParser.parseConfigFile("server.conf");
-    ConfigParser.displayData();
+    WebServer webserver;
+    webserver.initialize("server.conf");
+    webserver.displayData();
+    // init_servers(ConfigParser.getServers());
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_fd == -1)
     {

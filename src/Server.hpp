@@ -18,4 +18,11 @@ class Server {
 		void	setServerName(std::vector<std::string> values);
 		void	setErrorPages(std::vector<std::string> values);
 		void	addLocation(Location location);
+
+		// Getters
+		int							getListen() const;
+		std::vector<std::string>	getServerNames() const;
+		std::map<int, std::string>	getErrorPages() const;
+		int							getClientMaxBodySize() const;
+		std::vector<Location>		getLocations() const;
 };

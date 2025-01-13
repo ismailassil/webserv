@@ -147,7 +147,7 @@ int ConfigParser::extractServerContext(const std::vector<std::string>& tokens, i
     {printf("Error\n"); exit(1);}
 }
 
-void ConfigParser::parseTokens(const std::vector<std::string>& tokens)
+void ConfigParser::parseTokens(const std::vector<std::string>& tokens, std::vector<Server>& servers)
 {
     bool serverFound = false;
 
@@ -176,77 +176,49 @@ void ConfigParser::parseTokens(const std::vector<std::string>& tokens)
         {printf("Error\n"); exit(1);}
 }
 
-void ConfigParser::checkConfigValidity()
-{
-    for (std::vector<Server>::iterator serverIt = servers.begin(); serverIt != servers.end(); ++serverIt)
-    {
-        if (serverIt->listen == -1)
-            // throw std::runtime_error("Error: 'listen' directive missing in 'server' context");
-            {printf("Error\n"); exit(1);}
-       if (serverIt->locations.empty())
-            // throw std::runtime_error("Error: No 'location' context found in the configuration.");
-            {printf("Error\n"); exit(1);}
+void ConfigParser::checkConfigValidity(std::vector<Server>& servers) {
+    std::set<int> serverPorts;
+
+    for (std::vector<Server>::iterator serverIt = servers.begin(); serverIt != servers.end(); ++serverIt) {
+        if (serverIt->listen == -1) {
+            printf("Warning: 'listen' directive missing. Defaulting to port 80.\n");
+            serverIt->listen = 80;
+        } else if (serverIt->listen < 1 || serverIt->listen > 65535) {
+            printf("Error: Invalid port '%d' in 'listen' directive. Must be between 1 and 65535.\n", serverIt->listen);
+            exit(1);
+        }
+
+        if (serverPorts.find(serverIt->listen) != serverPorts.end()) {
+            printf("Error: Duplicate 'listen' port '%d' found in configuration.\n", serverIt->listen);
+            exit(1);
+        }
+        serverPorts.insert(serverIt->listen);
+
+        if (serverIt->server_names.empty()) {
+            printf("Warning: No 'server_name' specified. Defaulting to 'default_server'.\n");
+            serverIt->server_names.push_back("default_server");
+        }
+        if (serverIt->locations.empty()) {
+            printf("Error: No 'location' context found in the configuration for server listening on port '%d'.\n", serverIt->listen);
+            exit(1);
+        }
+
         std::set<std::string> locationPaths;
-        for (std::vector<Location>::iterator locIt = serverIt->locations.begin(); locIt != serverIt->locations.end(); ++locIt)
-        {
-            if (locationPaths.find(locIt->path) != locationPaths.end())
-                // throw std::runtime_error("Error: Duplicate 'location' context found for path: " + locIt->path);
-                {printf("Error\n"); exit(1);}
+        for (std::vector<Location>::iterator locIt = serverIt->locations.begin(); locIt != serverIt->locations.end(); ++locIt) {
+            if (locIt->path.empty()) {
+                printf("Error: 'location' context has an empty path in server listening on port '%d'.\n", serverIt->listen);
+                exit(1);
+            }
+            if (locationPaths.find(locIt->path) != locationPaths.end()) {
+                printf("Error: Duplicate 'location' path '%s' found in server listening on port '%d'.\n", locIt->path.c_str(), serverIt->listen);
+                exit(1);
+            }
             locationPaths.insert(locIt->path);
         }
     }
 }
 
-void ConfigParser::displayData() {
-    int serverCount = 1;
-
-    for (std::vector<Server>::const_iterator serverIt = servers.begin(); serverIt != servers.end(); ++serverIt, ++serverCount) {
-        std::cout << "Server " << serverCount << ":\n";
-
-        std::cout << "  Listen: " << serverIt->listen << "\n";
-        std::cout << "  Server Names: ";
-        for (std::vector<std::string>::const_iterator nameIt = serverIt->server_names.begin(); nameIt != serverIt->server_names.end(); ++nameIt) {
-            if (nameIt != serverIt->server_names.begin()) std::cout << ", ";
-            std::cout << *nameIt;
-        }
-        std::cout << "\n";
-
-        std::cout << "  Client Max Body Size: ";
-        if (serverIt->client_max_body_size > 0)
-            std::cout << serverIt->client_max_body_size << " bytes\n";
-        else
-            std::cout << "Unlimited\n";
-
-        std::cout << "  Error Pages:\n";
-        for (std::map<int, std::string>::const_iterator errorIt = serverIt->error_pages.begin(); errorIt != serverIt->error_pages.end(); ++errorIt) {
-            std::cout << "    " << errorIt->first << " -> " << errorIt->second << "\n";
-        }
-
-        std::cout << "  Locations:\n";
-        int locationCount = 1;
-        for (std::vector<Location>::const_iterator locIt = serverIt->locations.begin(); locIt != serverIt->locations.end(); ++locIt, ++locationCount) {
-            std::cout << "    Location " << locationCount << ":\n";
-
-            std::cout << "      Path: " << locIt->path << "\n";
-            std::cout << "      Root: " << locIt->root << "\n";
-            std::cout << "      Index: " << locIt->index << "\n";
-            std::cout << "      Autoindex: " << (locIt->autoindex ? "on" : "off") << "\n";
-            std::cout << "      Upload Path: " << locIt->upload_path << "\n";
-            std::cout << "      Redirect: " << locIt->redirect << "\n";
-
-            std::cout << "      Methods: ";
-            for (std::set<std::string>::const_iterator methodIt = locIt->methods.begin(); methodIt != locIt->methods.end(); ++methodIt) {
-                if (methodIt != locIt->methods.begin()) std::cout << ", ";
-                std::cout << *methodIt;
-            }
-            std::cout << "\n";
-        }
-        std::cout << "\n";
-    }
-}
-
-
-void ConfigParser::parseConfigFile(const std::string &filePath)
+void ConfigParser::parseConfigFile(const std::string &filePath, std::vector<Server>& servers)
 {
     std::ifstream file(filePath.c_str());
     if (!file.is_open())
@@ -263,7 +235,6 @@ void ConfigParser::parseConfigFile(const std::string &filePath)
             fileContent += '\n';
     }
     tokenize(fileContent, tokens);
-    parseTokens(tokens);
-    checkConfigValidity();
-    displayData();
+    parseTokens(tokens, servers);
+    checkConfigValidity(servers);
 }
