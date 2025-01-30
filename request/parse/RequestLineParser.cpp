@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:33:30 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/25 12:29:39 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 17:39:24 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/parse/RequestLineParser.hpp"
+#include "RequestLineParser.hpp"
 
 bool RequestLineParser::isValidRequestLine( const string& header ) {
 	const string allowed =

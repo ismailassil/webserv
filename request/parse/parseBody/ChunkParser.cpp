@@ -6,14 +6,14 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:21 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 20:54:40 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:43:30 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../../headers/parse/parseBody/ChunkParser.hpp"
+#include "ChunkParser.hpp"
 
 bool ChunkParser::isEndBoundary( void ) {
-	size_t pos = chunkInfo.requestChunk.find( "\r\n" + headerInfo.endBoundary );
+	size_t pos = chunkInfo.requestChunk.find( CRNL + headerInfo.endBoundary );
 
 	if ( pos != string::npos && pos == 0 ) {
 		pushChunk();
@@ -138,7 +138,7 @@ bool ChunkParser::parseBodyLength( void ) {
 	chunkInfo.requestChunk.erase( 0, pos + 2 );
 	bodyStatus.isbodySize = true;
 	if ( lengthInfo.chunkLength == 2 &&
-		 chunkInfo.requestChunk.substr( 0, 2 ) == "\r\n" ) {
+		 chunkInfo.requestChunk.substr( 0, 2 ) == CRNL ) {
 		chunkInfo.requestChunk.erase( 0, 4 );
 		bodyStatus.isbodySize = false;
 		bodyStatus.isheadDone = false;

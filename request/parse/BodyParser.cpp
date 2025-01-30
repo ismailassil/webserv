@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 15:22:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 19:32:24 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 19:10:17 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/parse/BodyParser.hpp"
+#include "BodyParser.hpp"
 
 BodyParser::BodyParser() : RequestParser() {
 	bodyParser				= NULL;

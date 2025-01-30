@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:38:45 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/25 10:28:48 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 17:39:18 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/parse/HeaderParser.hpp"
+#include "HeaderParser.hpp"
 
 bool HeaderParser::isValidHeader( const string& line ) {
 	size_t crPos = line.find( "\r" );

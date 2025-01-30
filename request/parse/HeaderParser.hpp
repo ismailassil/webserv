@@ -1,27 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   RequestLineParser.hpp                              :+:      :+:    :+:   */
+/*   HeaderParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/25 12:29:35 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 17:37:45 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "../RequestParser.hpp"	 // IWYU pragma: keep
-#include "../bits.hpp"
+#include "../../srcs/bits.hpp"
 
-class RequestLineParser : public RequestParser {
+class HeaderParser : public RequestParser {
 	private:
-		bool isValidRequestLine( const string& );
+		bool isValidHeader( const string& );
 		void parseLine( const string& );
+		bool isDoubleCRLF( istream&, const string& );
 
 	public:
-		RequestLineParser() : RequestParser() {}
-
-		void		 parse( istringstream& );;
-		void		 print() const;
+		HeaderParser() : RequestParser() {}
+		void parse( istringstream& );
+		void print() const;
 };

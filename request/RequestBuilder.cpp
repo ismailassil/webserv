@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:09:27 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 15:54:39 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 18:43:49 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../headers/RequestBuilder.hpp"
+#include "RequestBuilder.hpp"
 
 void RequestBuilder::parseRequestHeader( const string& RawRequest ) {
 	istringstream stream( RawRequest );
@@ -118,7 +118,7 @@ void RequestBuilder::build( const string& incomingRequest ) {
 
 	rawRequest.append( incomingRequest );
 	if ( !isHeaderDone ) {
-		pos = rawRequest.find( "\r\n\r\n" );
+		pos = rawRequest.find( DCRNL );
 		if ( pos != string::npos ) {
 			parseRequestHeader( rawRequest );
 			getRequestStatus(), getHeaderInfos();

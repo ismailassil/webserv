@@ -11,18 +11,24 @@
 /* ************************************************************************** */
 
 #pragma once
+
+#include <netinet/in.h>	 // IWYU pragma: keep
+#include <sys/socket.h>	 // IWYU pragma: keep
+#include <unistd.h>		 // IWYU pragma: keep
+
 #include <algorithm>  // IWYU pragma: keep
 #include <cstddef>	  // IWYU pragma: keep
 #include <cstring>	  // IWYU pragma: keep
 #include <exception>
-#include <fstream>	  // IWYU pragma: keep
-#include <ios>		  // IWYU pragma: keep
-#include <iostream>	  // IWYU pragma: keep
-#include <map>		  // IWYU pragma: keep
-#include <regex>	  // IWYU pragma: keep
-#include <sstream>	  // IWYU pragma: keep
-#include <string>	  // IWYU pragma: keep
-#include <utility>	  // IWYU pragma: keep
+#include <fstream>	 // IWYU pragma: keep
+#include <ios>		 // IWYU pragma: keep
+#include <iostream>	 // IWYU pragma: keep
+#include <map>		 // IWYU pragma: keep
+#include <regex>	 // IWYU pragma: keep
+#include <set>		 // IWYU pragma: keep
+#include <sstream>	 // IWYU pragma: keep
+#include <string>	 // IWYU pragma: keep
+#include <utility>	 // IWYU pragma: keep
 
 #define RED		"\x1b[31m"
 #define GREEN	"\x1b[1;32m"
@@ -48,9 +54,12 @@
 #define CRNL	 "\r\n"
 #define DCRNL	 "\r\n\r\n"
 
+#define BUFFER_SIZE 8192
+
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::exception;
 using std::find;
 using std::getline;
 using std::ifstream;
@@ -64,10 +73,11 @@ using std::pair;
 using std::regex;
 using std::remove;
 using std::runtime_error;
+using std::set;
 using std::string;
 using std::strtol;
 using std::vector;
-using std::exception;
+using std::stringstream;
 
 struct RequestLine {
 		string method;
@@ -101,7 +111,9 @@ enum RequestStatus {
 	NONE
 };
 
-enum ParserIndex { REQUEST_LINE = 0, HEADER = 1, BODY = 2 };
+enum ParserIndex { REQUEST_LINE = 0,
+				   HEADER		= 1,
+				   BODY			= 2 };
 
 struct ChunkInfo {
 		string requestChunk;
@@ -115,3 +127,5 @@ struct LengthInfo {
 		size_t bodyLength;
 		size_t chunkLength;
 };
+
+string intToString( int num );

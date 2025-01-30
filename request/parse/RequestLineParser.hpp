@@ -1,34 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTPMethods.hpp                                    :+:      :+:    :+:   */
+/*   RequestLineParser.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/15 20:11:37 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/23 18:36:56 by iassil           ###   ########.fr       */
+/*   Created: 2024/12/16 09:29:17 by iassil            #+#    #+#             */
+/*   Updated: 2025/01/30 17:37:49 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+#include "../RequestParser.hpp"	 // IWYU pragma: keep
+#include "../../srcs/bits.hpp"
 
-class HTTPMethods {
-	public:
-		virtual ~HTTPMethods() {}
-		virtual void execute() = 0;
-};
+class RequestLineParser : public RequestParser {
+	private:
+		bool isValidRequestLine( const string& );
+		void parseLine( const string& );
 
-class GETMethod : public HTTPMethods {
 	public:
-		void execute();
-};
+		RequestLineParser() : RequestParser() {}
 
-class POSTMethod : public HTTPMethods {
-	public:
-		void execute();
-};
-
-class DELETEMethod : public HTTPMethods {
-	public:
-		void execute();
+		void		 parse( istringstream& );;
+		void		 print() const;
 };

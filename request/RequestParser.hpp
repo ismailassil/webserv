@@ -6,12 +6,12 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 09:07:39 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/25 12:28:55 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 17:36:11 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "bits.hpp"
+#include "../srcs/bits.hpp"
 
 class RequestParser {
 	protected:

@@ -6,13 +6,13 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:17 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/25 12:51:53 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 17:39:00 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "../../bits.hpp"
-#include "../BodyParser.hpp"  // IWYU pragma: keep
+#include "../../../srcs/bits.hpp"
+#include "../BodyParser.hpp"
 
 class BoundaryParser : public BodyParser {
 	private:

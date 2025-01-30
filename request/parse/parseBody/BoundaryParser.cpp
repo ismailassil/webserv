@@ -6,11 +6,11 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:04:10 by iassil            #+#    #+#             */
-/*   Updated: 2024/12/27 20:57:39 by iassil           ###   ########.fr       */
+/*   Updated: 2025/01/30 17:39:42 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../../headers/parse/parseBody/BoundaryParser.hpp"
+#include "BoundaryParser.hpp"
 
 void BoundaryParser::parseFilenameBody( void ) {
 	size_t pos	= chunkInfo.requestChunk.find( headerInfo.boundary );
