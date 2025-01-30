@@ -1,6 +1,8 @@
 # WebServ
 
-⚠️ NOTE: This project is currently under active development
+⚠️ **NOTE**: This project is currently under active development
+
+---
 
 WebServ is a lightweight, high-performance web server designed for flexibility and scalability. This project is currently in progress, with a focus on handling HTTP requests efficiently while maintaining ease of configuration.
 
