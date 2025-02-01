@@ -35,7 +35,7 @@ server {
     listen 8080;
     root ./public;
     location /api {
-        fastcgi_pass unix:/run/fcgiwrap.socket;
+        [...]
     }
 }
 ```
