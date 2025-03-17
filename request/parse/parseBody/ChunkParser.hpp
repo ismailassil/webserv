@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:07:16 by iassil            #+#    #+#             */
-/*   Updated: 2025/01/30 17:37:34 by iassil           ###   ########.fr       */
+/*   Updated: 2025/03/17 21:00:47 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../../srcs/bits.hpp"
 #include "../BodyParser.hpp"  // IWYU pragma: keep
 
-static int step;
+// static int step;
 
 class ChunkParser : public BodyParser {
 	private:
@@ -28,8 +28,8 @@ class ChunkParser : public BodyParser {
 		void parseChunked( const istringstream& stream );
 
 	public:
-		ChunkParser() : BodyParser() {}
-		~ChunkParser() {}
+		ChunkParser();
+		~ChunkParser();
 
 		void parse( istringstream& );
 };

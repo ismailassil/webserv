@@ -20,15 +20,17 @@
 #include <cstddef>	  // IWYU pragma: keep
 #include <cstring>	  // IWYU pragma: keep
 #include <exception>
+#include <sstream>	 // IWYU pragma: keep
 #include <fstream>	 // IWYU pragma: keep
 #include <ios>		 // IWYU pragma: keep
 #include <iostream>	 // IWYU pragma: keep
 #include <map>		 // IWYU pragma: keep
-#include <regex>	 // IWYU pragma: keep
+// #include <regex>	 // IWYU pragma: keep
 #include <set>		 // IWYU pragma: keep
 #include <sstream>	 // IWYU pragma: keep
 #include <string>	 // IWYU pragma: keep
 #include <utility>	 // IWYU pragma: keep
+#include <vector>	 // IWYU pragma: keep
 
 #define RED		"\x1b[31m"
 #define GREEN	"\x1b[1;32m"
@@ -70,7 +72,7 @@ using std::make_pair;
 using std::map;
 using std::ofstream;
 using std::pair;
-using std::regex;
+// using std::regex;
 using std::remove;
 using std::runtime_error;
 using std::set;

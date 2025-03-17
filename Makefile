@@ -1,70 +1,92 @@
-CPP				=	c++
-CPP				+=	-Wall -Wextra -Werror -std=c++98
-CPP				+=	-fsanitize=address -g
+CXX				=	clang++
+CXXFLAGS		=	-Wall -Wextra -Werror -fsanitize=address -g -std=c++98
 RM				=	rm -f
 NAME			=	webserv
-HEADER			=	headers/HTTPMethods.hpp		headers/RequestBuilder.hpp			headers/RequestParser.hpp		\
-					headers/bits.hpp
-PARSE_HEADER	=	headers/parse/BodyParser.hpp	headers/parse/HeaderParser.hpp		headers/parse/RequestLineParser.hpp
 
-FLD_NAME		=	._object_files
+REQUEST_HEADER	=	request/RequestBuilder.hpp	request/RequestParser.hpp
+BITS_HEADER		=	srcs/bits.hpp srcs/WebServer.hpp
+PARSE_HEADER	=	request/parse/BodyParser.hpp	request/parse/HeaderParser.hpp		request/parse/RequestLineParser.hpp
+BODY_HEADER		=	request/parse/parseBody/BoundaryParser.hpp request/parse/parseBody/ChunkParser.hpp
+CONFIG_HEADER	=	config/ConfigParser.hpp config/Location.hpp
+SERVER_HEADER	=	server/Server.hpp
+
+HEADER			=	$(REQUEST_HEADER) $(BITS_HEADER) $(PARSE_HEADER)	\
+					$(BODY_HEADER) $(CONFIG_HEADER) $(SERVER_HEADER)
+					
+OBJ_DIR			=	.object_files
 
 ##### SOURCE FILES #######################################################################
-SRC_FILES	=	main.cpp
+SRC_FILES	=	main.cpp			bits.cpp			WebServer.cpp
+SRV_FILES	=	Server.cpp
+CONF_FILES	=	ConfigParser.cpp	Location.cpp
 RQS_FILES	=	RequestParser.cpp	RequestBuilder.cpp
 PRS_FILES	=	HeaderParser.cpp	RequestLineParser.cpp	BodyParser.cpp
 BDY_FILES	=	BoundaryParser.cpp	ChunkParser.cpp
 
 ##########################################################################################
 
-SRC_SRC		=	$(addprefix srcs/,$(SRC_FILES))
-RQS_SRC		=	$(addprefix request/,$(RQS_FILES))
-PRS_SRC		=	$(addprefix request/parse/,$(PRS_FILES))
-BDY_SRC		=	$(addprefix request/parse/parseBody/,$(BDY_FILES))
+SRC_DIR		=	$(addprefix srcs/,$(SRC_FILES))
+SRV_DIR		=	$(addprefix server/,$(SRV_FILES))
+CONF_DIR	=	$(addprefix config/,$(CONF_FILES))
+RQS_DIR		=	$(addprefix request/,$(RQS_FILES))
+PRS_DIR		=	$(addprefix request/parse/,$(PRS_FILES))
+BDY_DIR		=	$(addprefix request/parse/parseBody/,$(BDY_FILES))
 
-SRC_OBJ		=	$(addprefix $(FLD_NAME)/,$(SRC_SRC:.cpp=.o))
-RQS_OBJ		=	$(addprefix $(FLD_NAME)/,$(RQS_SRC:.cpp=.o))
-PRS_OBJ		=	$(addprefix $(FLD_NAME)/,$(PRS_SRC:.cpp=.o))
-BDY_OBJ		=	$(addprefix $(FLD_NAME)/,$(BDY_SRC:.cpp=.o))
+# Object files for source files
+SRC_OBJ		=	$(addprefix $(OBJ_DIR)/,$(SRC_DIR:.cpp=.o))
+# Object files for server files
+SRV_OBJ		=	$(addprefix $(OBJ_DIR)/,$(SRV_DIR:.cpp=.o))
+# Object files for config files
+CONF_OBJ	=	$(addprefix $(OBJ_DIR)/,$(CONF_DIR:.cpp=.o))
+# Object files for request files
+RQS_OBJ		=	$(addprefix $(OBJ_DIR)/,$(RQS_DIR:.cpp=.o))
+# Object files for parse files
+PRS_OBJ		=	$(addprefix $(OBJ_DIR)/,$(PRS_DIR:.cpp=.o))
+# Object files for body files
+BDY_OBJ		=	$(addprefix $(OBJ_DIR)/,$(BDY_DIR:.cpp=.o))
 
-OBJ 		=	$(SRC_OBJ) $(RQS_OBJ) $(PRS_OBJ) $(BDY_OBJ)
+OBJ = $(SRC_OBJ) $(SRV_OBJ) $(CONF_OBJ) $(RQS_OBJ) $(PRS_OBJ) $(BDY_OBJ)
 
 ########### Goal Target
-all: files $(NAME)
+all: $(NAME)
 
-run: $(NAME) files art
+run: $(NAME) art
 	@./$(NAME)
 
-$(FLD_NAME)/srcs/%.o: ./srcs/%.cpp $(HEADER)
+$(OBJ_DIR)/srcs/%.o: ./srcs/%.cpp $(HEADER)
 	@mkdir -p $(dir $@)
-	@$(CPP) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(FLD_NAME)/request/%.o: ./request/%.cpp $(HEADER)
+$(OBJ_DIR)/server/%.o: ./server/%.cpp $(HEADER)
 	@mkdir -p $(dir $@)
-	@$(CPP) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(FLD_NAME)/request/parse/%.o: ./request/parse/%.cpp $(PARSE_HEADER)
+$(OBJ_DIR)/config/%.o: ./config/%.cpp $(HEADER)
 	@mkdir -p $(dir $@)
-	@$(CPP) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(FLD_NAME)/request/parse/parseBody/%.o: ./request/parse/parseBody/%.cpp $(PARSE_HEADER)
+$(OBJ_DIR)/request/%.o: ./request/%.cpp $(HEADER)
 	@mkdir -p $(dir $@)
-	@$(CPP) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/request/parse/%.o: ./request/parse/%.cpp $(PARSE_HEADER)
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/request/parse/parseBody/%.o: ./request/parse/parseBody/%.cpp $(PARSE_HEADER)
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 ######################################################
 $(NAME): $(OBJ)
 	@echo "$(YELLOW)[ ~ ] Compilation of the Objects files...$(RESET)"
-	@$(CPP) $^ -o $@
+	@$(CXX) $(CXXFLAGS) $^ -o $@
 	@echo "$(GREEN)[ ✓ ] Executable file Compiled Successfully!$(RESET)"
 
-files:
-	@$(RM) *.py ~/goinfre/_downloads/*
-	@mkdir -p ~/goinfre/_downloads/
-
-clean: files
+clean:
 	@echo "$(YELLOW)[ ~ ] Removing Object files $(RESET)"
 	@$(RM) $(OBJ)
-	@$(RM) -rf $(FLD_NAME)
+	@$(RM) -rf $(OBJ_DIR)
 	@echo "$(GREEN)[ ✓ ] Object files removed successfully!$(RESET)"
 	
 fclean: clean

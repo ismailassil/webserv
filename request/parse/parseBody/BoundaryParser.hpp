@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:17 by iassil            #+#    #+#             */
-/*   Updated: 2025/01/30 17:39:00 by iassil           ###   ########.fr       */
+/*   Updated: 2025/03/17 21:01:38 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ class BoundaryParser : public BodyParser {
 		void parseBinary( const istringstream& stream );
 
 	public:
-		BoundaryParser() : BodyParser() {}
-		~BoundaryParser() {}
+		BoundaryParser();
+		~BoundaryParser();
 
 		void parse( istringstream& );
 };

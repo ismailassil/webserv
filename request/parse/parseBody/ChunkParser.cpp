@@ -6,11 +6,15 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:06:21 by iassil            #+#    #+#             */
-/*   Updated: 2025/01/30 18:43:30 by iassil           ###   ########.fr       */
+/*   Updated: 2025/03/17 21:23:19 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ChunkParser.hpp"
+
+ChunkParser::ChunkParser() {}
+
+ChunkParser::~ChunkParser() {}
 
 bool ChunkParser::isEndBoundary( void ) {
 	size_t pos = chunkInfo.requestChunk.find( CRNL + headerInfo.endBoundary );
@@ -40,7 +44,7 @@ void ChunkParser::parseInnerBoundary( const string& body ) {
 		string contentStringName = body.substr( namePos, cpos - namePos );
 		chunkInfo.filename		 = getAttr( contentString );
 		chunkInfo.name			 = getAttr( contentStringName );
-		outfile.open( "/Users/iassil/goinfre/_downloads/" + chunkInfo.filename,
+		outfile.open( string("/tmp/_downloads/" + chunkInfo.filename).c_str(),
 					  ios::app | ios::binary );	 // to be removed
 		if ( !outfile.is_open() )
 			throw runtime_error( "-- failed to open - " + chunkInfo.filename +
@@ -70,7 +74,7 @@ void ChunkParser::pushChunk( void ) {
 		outfile.close();
 		bodyStatus.isFile = false;
 	} else if ( bodyStatus.isText ) {
-		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
+		ofstream nOutfile( string("/tmp/_downloads/" + chunkInfo.name).c_str(),
 						   ios::app | ios::binary );  // to be removed
 		nOutfile.write( chunkInfo.Chunk.c_str(),
 						chunkInfo.Chunk.length() );	 // to be removed
@@ -194,7 +198,7 @@ void ChunkParser::parseChunked( const istringstream& stream ) {
 	while ( !chunkInfo.requestChunk.empty() ) {
 		if ( !bodyStatus.initDone ) {
 			chunkInfo.filename = generateRandomName( headerInfo.contentType );
-			outfile.open( chunkInfo.filename, ios::app | ios::binary );
+			outfile.open( chunkInfo.filename.c_str(), ios::app | ios::binary );
 			if ( !outfile.is_open() )
 				throw runtime_error( "failed to open - " + chunkInfo.filename );
 			bodyStatus.initDone = true;

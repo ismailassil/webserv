@@ -3,3 +3,4 @@ _downloads
 _uploads
 ._object_files
 .DS_Store
+.object_files

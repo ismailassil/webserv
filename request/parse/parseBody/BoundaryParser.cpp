@@ -6,11 +6,15 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/23 03:04:10 by iassil            #+#    #+#             */
-/*   Updated: 2025/01/30 17:39:42 by iassil           ###   ########.fr       */
+/*   Updated: 2025/03/17 21:22:19 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "BoundaryParser.hpp"
+#include <fstream>
+
+BoundaryParser::BoundaryParser() {}
+BoundaryParser::~BoundaryParser() {}
 
 void BoundaryParser::parseFilenameBody( void ) {
 	size_t pos	= chunkInfo.requestChunk.find( headerInfo.boundary );
@@ -55,8 +59,7 @@ void BoundaryParser::parseNameBody( void ) {
 		chunkInfo.requestChunk.erase( 0, pos );
 		chunkInfo.Chunk.append( remaingStr );
 		metaData.push_back( make_pair( chunkInfo.name, chunkInfo.Chunk ) );
-		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
-						   ios::app | ios::binary );  // to be removed
+		ofstream nOutfile( string("/tmp/_downloads/" + chunkInfo.name).c_str(), ios::app | ios::binary );  // to be removed
 		nOutfile.write( chunkInfo.Chunk.c_str(),
 						chunkInfo.Chunk.length() );	 // to be removed
 		nOutfile.close();							 // to be removed
@@ -68,8 +71,7 @@ void BoundaryParser::parseNameBody( void ) {
 		chunkInfo.requestChunk.erase( epos - 2 );
 		chunkInfo.Chunk.append( chunkInfo.requestChunk );
 		metaData.push_back( make_pair( chunkInfo.name, chunkInfo.Chunk ) );
-		ofstream nOutfile( "/Users/iassil/goinfre/_downloads/" + chunkInfo.name,
-						   ios::app | ios::binary );  // to be removed
+		ofstream nOutfile( string("/tmp/_downloads/" + chunkInfo.name).c_str(), ios::app | ios::binary );  // to be removed
 		nOutfile.write( chunkInfo.Chunk.c_str(),
 						chunkInfo.Chunk.length() );	 // to be removed
 		nOutfile.close();							 // to be removed
@@ -100,8 +102,7 @@ void BoundaryParser::parseFilenameAttr( size_t& pos, size_t& npos ) {
 		chunkInfo.requestChunk.substr( npos, cpos - npos );
 	chunkInfo.filename = getAttr( contentString );
 	chunkInfo.name	   = getAttr( contentStringName );
-	outfile.open( "/Users/iassil/goinfre/_downloads/" + chunkInfo.filename,
-				  ios::app | ios::binary );	 // to be removed
+	outfile.open( string("/tmp/_downloads/" + chunkInfo.filename).c_str(), ios::app | ios::binary );	 // to be removed
 	if ( !outfile.is_open() )
 		throw runtime_error( "failed to open - " + chunkInfo.filename );
 
@@ -152,7 +153,7 @@ void BoundaryParser::parseBinary( const istringstream& stream ) {
 	while ( !chunkInfo.requestChunk.empty() ) {
 		if ( !bodyStatus.initDone ) {
 			chunkInfo.filename = generateRandomName( headerInfo.contentType );
-			outfile.open( chunkInfo.filename, ios::app | ios::binary );
+			outfile.open( chunkInfo.filename.c_str(), ios::app | ios::binary );
 			if ( !outfile.is_open() )
 				throw runtime_error( "failed to open - " + chunkInfo.filename );
 			bodyStatus.initDone = true;

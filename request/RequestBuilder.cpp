@@ -6,7 +6,7 @@
 /*   By: iassil <iassil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/16 12:09:27 by iassil            #+#    #+#             */
-/*   Updated: 2025/01/30 18:43:49 by iassil           ###   ########.fr       */
+/*   Updated: 2025/03/17 14:31:02 by iassil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,13 +87,7 @@ void RequestBuilder::getHeaderInfos() {
 
 	if ( it_ct != requestHeader.end() ) {
 		string type = it_ct->second;
-		type.erase( 0, type.find_first_of( "/" ) + 1 );
-		if ( type == "plain" )
-			type = ".txt";
-		else if ( type == "octet-stream" )
-			type = "";
-		else
-			type = "." + type;
+		setType(type);
 		headerInfo.contentType = type;
 	}
 	if ( it_ct != requestHeader.end() ) {
@@ -150,6 +144,29 @@ RequestBuilder::RequestBuilder() {
 	status						= NONE;
 	isHeaderDone				= false;
 	isSettingDone				= false;
+
+	mimeTypes["text/html"] = ".html";
+	mimeTypes["text/plain"] = ".txt";
+	mimeTypes["text/css"] = ".css";
+	mimeTypes["application/javascript"] = ".js";
+	mimeTypes["application/json"] = ".json";
+	mimeTypes["application/xml"] = ".xml";
+	mimeTypes["image/jpeg"] = ".jpeg";
+	mimeTypes["image/png"] = ".png";
+	mimeTypes["image/webp"] = ".webp";
+	mimeTypes["image/gif"] = ".gif";
+	mimeTypes["image/svg+xml"] = ".svg";
+	mimeTypes["audio/mpeg"] = ".mp3";
+	mimeTypes["audio/ogg"] = ".ogg";
+	mimeTypes["audio/webm"] = ".webm";
+	mimeTypes["audio/mp4"] = ".mp4";
+	mimeTypes["application/pdf"] = ".pdf";
+	mimeTypes["application/zip"] = ".zip";
+	mimeTypes["application/octet-stream"] = ".bin";
+	mimeTypes["application/pdf"] = ".";
+	mimeTypes["font/woff"] = ".woff";
+	mimeTypes["font/woff2"] = ".woff2";
+	mimeTypes["application/font-woff"] = ".woff";
 }
 
 RequestBuilder::~RequestBuilder() {
@@ -159,4 +176,14 @@ RequestBuilder::~RequestBuilder() {
 			requestParser[i] = NULL;
 		}
 	}
+}
+
+void RequestBuilder::setType(string &type) {
+	for (map<string, string>::iterator it = mimeTypes.begin(); it != mimeTypes.end(); it++) {
+		if (it->first == type) {
+			type = it->second;
+			return ;
+		}
+	}
+	// throw an exception for not founding the compatible type
 }
